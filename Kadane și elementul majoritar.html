@@ -1,0 +1,1771 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Kadane și elementul majoritar</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: lesson column + sticky contents; a slim teaching bar on top. Blue = stânga, orange = dreapta is the page's identity. */
+:root{
+  --bg:#f5f7fa; --surface:#ffffff; --sunk:#eceff4; --line:#d8dee8;
+  --fg:#18202c; --muted:#5a6577;
+  --l:#2457c5; --l-soft:#dde7fb; --r:#c8460d; --r-soft:#fbe4d8;
+  --ok:#1f7a4d; --ok-soft:#dcf1e5; --bad:#b4232c; --bad-soft:#f8dcde;
+  --think:#6b3fb8; --think-soft:#ece4fa;
+  --code-bg:#11161f; --code-fg:#dbe2ee; --c-kw:#8fb4ff; --c-str:#f0a674; --c-com:#7b8798; --c-num:#f2c879; --c-meta:#c59df5; --c-fn:#86d5c4;
+  --f-display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --f-body:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --f-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --fs:18px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0e131a; --surface:#151c26; --sunk:#1b2430; --line:#2a3544;
+  --fg:#e3e9f2; --muted:#98a3b4;
+  --l:#7ea6ff; --l-soft:#1e2c4d; --r:#ff9a62; --r-soft:#43271a;
+  --ok:#5fd39a; --ok-soft:#173528; --bad:#ff7d86; --bad-soft:#41191d;
+  --think:#c3a4ff; --think-soft:#2a2140;
+  --code-bg:#0a0e14; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e131a; --surface:#151c26; --sunk:#1b2430; --line:#2a3544;
+  --fg:#e3e9f2; --muted:#98a3b4;
+  --l:#7ea6ff; --l-soft:#1e2c4d; --r:#ff9a62; --r-soft:#43271a;
+  --ok:#5fd39a; --ok-soft:#173528; --bad:#ff7d86; --bad-soft:#41191d;
+  --think:#c3a4ff; --think-soft:#2a2140;
+  --code-bg:#0a0e14; color-scheme:dark}
+html.proj{--fs:23px}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:var(--fs);line-height:1.65}
+a{color:var(--l);text-underline-offset:3px}
+a:hover{color:var(--r)}
+:focus-visible{outline:3px solid var(--r);outline-offset:2px;border-radius:4px}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+html.proj .wrap{max-width:1320px}
+
+/* teaching bar */
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--surface);border-bottom:1px solid var(--line)}
+.bar .wrap{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;justify-content:space-between;padding-block:8px}
+.brand{font-family:var(--f-display);font-weight:700;font-size:15px;white-space:nowrap}
+.brand .pl{color:var(--l)} .brand .pr{color:var(--r)}
+.bar-ctrl{display:flex;flex-wrap:wrap;gap:6px}
+.tgl{font-family:var(--f-display);font-weight:500;font-size:14px;border:1.5px solid var(--line);background:var(--bg);color:var(--fg);border-radius:999px;padding:5px 13px;cursor:pointer;display:flex;align-items:center;gap:7px}
+.tgl::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--line)}
+.tgl[aria-pressed="true"]{border-color:var(--fg)}
+.tgl[aria-pressed="true"]::before{background:var(--ok)}
+
+/* hero */
+.hero{padding-block:36px 28px;border-bottom:1px solid var(--line)}
+.eyebrow{font-family:var(--f-mono);font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--f-display);font-weight:800;font-size:clamp(40px,6vw,68px);line-height:.95;letter-spacing:-.03em;margin:12px 0 20px;text-wrap:balance}
+h1 .pl{color:var(--l)} h1 .pr{color:var(--r)}
+.lede{max-width:62ch;font-size:1.1em;margin:0}
+.hero-strip{margin-top:32px;display:flex;gap:6px;flex-wrap:wrap}
+.howto{margin-top:28px;display:flex;flex-wrap:wrap;gap:8px 18px;font-family:var(--f-mono);font-size:13px;color:var(--muted)}
+.howto b{color:var(--fg);font-weight:600}
+
+/* layout */
+.layout{display:grid;grid-template-columns:230px minmax(0,1fr);gap:56px;padding-block:40px 80px}
+html.proj .layout{grid-template-columns:minmax(0,1fr)}
+html.proj .toc{display:none}
+@media (max-width:900px){.layout{grid-template-columns:minmax(0,1fr);gap:24px}.toc{position:static!important}}
+.toc{position:sticky;top:calc(env(safe-area-inset-top,0px) + 76px);align-self:start;font-family:var(--f-display);font-size:15px;max-height:calc(100vh - 100px);overflow:auto}
+.toc p{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+.toc ol{list-style:none;margin:0;padding:0;display:grid;gap:1px}
+.toc a{display:flex;gap:8px;padding:4px 10px;border-left:2px solid var(--line);color:var(--muted);text-decoration:none}
+.toc a .n{font-family:var(--f-mono);font-size:12px;padding-top:2px;min-width:1.4em}
+.toc a:hover,.toc a.on{color:var(--fg);border-left-color:var(--l)}
+.toc .sub a{padding-left:32px;font-size:14px}
+@media (max-width:900px){.toc{max-height:none}.toc ol{display:flex;flex-wrap:wrap;gap:6px}.toc .sub{display:none}.toc a{border:1px solid var(--line);border-radius:999px;padding:4px 12px}}
+
+main{min-width:0}
+section{scroll-margin-top:80px}
+section+section{margin-top:80px}
+.sec-n{font-family:var(--f-mono);font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--r);margin-bottom:6px}
+h2{font-family:var(--f-display);font-weight:700;font-size:clamp(30px,4vw,42px);line-height:1.1;letter-spacing:-.02em;margin:0 0 18px;text-wrap:balance}
+h3{font-family:var(--f-display);font-weight:700;font-size:1.35em;line-height:1.2;margin:36px 0 10px;text-wrap:balance}
+h4{font-family:var(--f-display);font-size:1em;color:var(--fg);margin:22px 0 6px;font-weight:700}
+.prose p,.prose ul,.prose ol{max-width:70ch}
+html.proj .prose p,html.proj .prose ul,html.proj .prose ol{max-width:none}
+p{margin:0 0 14px}
+ul,ol{padding-left:1.3em;margin:0 0 14px}
+li{margin-bottom:4px}
+code,.mono{font-family:var(--f-mono);font-size:.86em}
+:not(pre)>code{background:var(--sunk);padding:1px 6px;border-radius:4px}
+.cx{font-family:var(--f-mono);font-size:.86em;background:var(--ok-soft);color:var(--ok);padding:1px 7px;border-radius:999px;white-space:nowrap}
+.cx.slow{background:var(--bad-soft);color:var(--bad)}
+
+/* concept cards */
+.trio{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:18px 0}
+.trio div{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+.trio b{display:block;font-family:var(--f-display);font-size:1.05em;margin-bottom:4px}
+.trio p{margin:0;font-size:.92em}
+.duo{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin:18px 0}
+.duo>div{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;min-width:0}
+.duo h3{margin:0 0 8px;font-size:1.15em}
+.duo ul{font-size:.94em}
+
+/* pseudocode */
+.pseudo{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 20px;font-family:var(--f-mono);font-size:.82em;line-height:1.75;overflow-x:auto;white-space:pre;max-width:70ch;margin:0 0 14px}
+.duo .pseudo{background:var(--bg)}
+.pseudo .k{color:var(--muted)} .pseudo .lv{color:var(--l);font-weight:600} .pseudo .rv{color:var(--r);font-weight:600}
+
+/* code */
+.code{position:relative;margin:14px 0 22px;border-radius:10px;background:var(--code-bg);color:var(--code-fg)}
+.code pre{margin:0;padding:18px 20px;overflow-x:auto;font-family:var(--f-mono);font-size:.78em;line-height:1.6;tab-size:4}
+.code pre code{background:none;padding:0;font-size:inherit}
+.code .tag{position:absolute;top:8px;right:84px;font-family:var(--f-mono);font-size:11px;color:var(--c-com);letter-spacing:.06em;text-transform:uppercase}
+.copy{position:absolute;top:6px;right:8px;font-family:var(--f-mono);font-size:12px;background:transparent;color:var(--c-com);border:1px solid #2c3646;border-radius:6px;padding:3px 9px;cursor:pointer}
+.copy:hover{color:var(--code-fg);border-color:var(--c-com)}
+.hljs-keyword,.hljs-type,.hljs-built_in{color:var(--c-kw)}
+.hljs-string{color:var(--c-str)} .hljs-comment{color:var(--c-com);font-style:italic}
+.hljs-number,.hljs-literal{color:var(--c-num)} .hljs-meta{color:var(--c-meta)} .hljs-meta .hljs-string{color:var(--c-str)}
+.hljs-title{color:var(--c-fn)}
+
+/* problem block */
+.prob{border-top:1px solid var(--line);padding-top:10px;margin-top:56px;scroll-margin-top:80px}
+.prob-meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.chip{font-family:var(--f-mono);font-size:12px;border:1px solid var(--line);border-radius:999px;padding:2px 9px;color:var(--muted);background:var(--surface)}
+.chip.lv-1{color:var(--ok);border-color:currentColor}
+.chip.lv-2{color:var(--l);border-color:currentColor}
+.chip.lv-3{color:var(--r);border-color:currentColor}
+.prob h3{margin-top:8px;font-size:1.55em}
+.prob h3 a{color:inherit;text-decoration-color:var(--line)}
+.prob h3 a:hover{color:var(--l)}
+.io{width:100%;max-width:70ch;border-collapse:collapse;font-size:.9em;margin:8px 0 18px;background:var(--surface);border:1px solid var(--line)}
+.tbl{overflow-x:auto}
+.io th{font-family:var(--f-mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:left;padding:10px 14px;background:var(--sunk);font-weight:600}
+.io td{padding:12px 14px;vertical-align:top;border-top:1px solid var(--line)}
+.io td.m{font-family:var(--f-mono);font-size:.94em;white-space:pre}
+.limits{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 16px}
+.limits span{font-family:var(--f-mono);font-size:.78em;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:4px 10px}
+
+/* think box */
+.think{margin:20px 0 10px;border-left:3px solid var(--think);background:var(--think-soft);border-radius:0 8px 8px 0;padding:14px 18px;max-width:78ch}
+.think .lbl{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--think);font-weight:600;margin-bottom:4px}
+.think .q{font-weight:600;margin:0 0 10px}
+.timer{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-family:var(--f-mono);font-size:13px;color:var(--muted)}
+.timer button{font-family:var(--f-mono);font-size:13px;border:1px solid var(--think);color:var(--think);background:transparent;border-radius:6px;padding:3px 9px;cursor:pointer}
+.timer button:hover{background:var(--surface)}
+.timer .clock{font-size:1.5em;font-weight:600;color:var(--fg);font-variant-numeric:tabular-nums;min-width:4ch}
+.timer.over .clock{color:var(--r)}
+html.proj .timer .clock{font-size:2.2em}
+
+/* hints + solution */
+details{max-width:100%}
+details>summary{list-style:none;cursor:pointer}
+details>summary::-webkit-details-marker{display:none}
+.hint{margin:8px 0;max-width:78ch}
+.hint>summary{display:inline-flex;align-items:center;gap:8px;font-family:var(--f-display);font-weight:500;font-size:.88em;color:var(--think);padding:4px 0}
+.hint>summary::before{content:"+";font-family:var(--f-mono);width:20px;height:20px;display:grid;place-items:center;border:1.5px solid var(--think);border-radius:5px;font-size:13px}
+.hint[open]>summary::before{content:"−"}
+.hint>div{padding:4px 0 6px 28px}
+.hint>div p:last-child{margin:0}
+.sol{margin:14px 0 0;border:1.5px solid var(--line);border-radius:12px;background:var(--surface)}
+.sol>summary{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 18px;font-family:var(--f-display);font-weight:700;font-size:1em}
+.sol>summary .arr{font-family:var(--f-mono);font-size:13px;color:var(--muted);font-weight:400}
+.sol>summary .arr::after{content:"Arată"}
+.sol[open]>summary .arr::after{content:"Ascunde"}
+.sol[open]>summary{border-bottom:1px solid var(--line)}
+.sol>.body{padding:6px 18px 4px}
+.sol .body>h4:first-child{margin-top:12px}
+
+/* callouts */
+.note{border-left:3px solid var(--l);background:var(--surface);padding:14px 18px;border-radius:0 8px 8px 0;max-width:70ch;margin:16px 0}
+.note.r{border-left-color:var(--r)}
+.note p:last-child{margin:0}
+.big{font-family:var(--f-mono);font-weight:600;font-size:1.1em}
+
+/* demos */
+.demo{background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:18px;margin:18px 0 22px}
+.demo-head{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;margin-bottom:12px}
+.demo-title{font-family:var(--f-display);font-weight:700;font-size:.95em}
+.legend{display:flex;gap:14px;font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.cells{display:flex;gap:6px;flex-wrap:wrap;padding:26px 0 30px;min-height:110px}
+.cell{position:relative;width:46px;height:50px;display:grid;place-items:center;border:1.5px solid var(--line);border-radius:8px;font-family:var(--f-mono);font-size:18px;font-weight:600;background:var(--surface);transition:background .2s,border-color .2s,opacity .2s}
+html.proj .cell{width:60px;height:64px;font-size:24px}
+.cell .ix{position:absolute;bottom:-21px;font-size:11px;color:var(--muted);font-weight:400}
+.cell.l{border-color:var(--l);background:var(--l-soft)}
+.cell.r{border-color:var(--r);background:var(--r-soft)}
+.cell.lr{border-color:var(--l);background:linear-gradient(135deg,var(--l-soft) 50%,var(--r-soft) 50%)}
+.cell.win,.cell.win.l,.cell.win.r{background:var(--ok-soft);border-color:var(--ok)}
+.cell.done{opacity:.38}
+.cell.bad{background:var(--bad-soft);border-color:var(--bad)}
+.cell .ptr{position:absolute;top:-22px;font-size:12px;font-weight:600}
+.cell .ptr.pl{color:var(--l)} .cell .ptr.pr{color:var(--r)}
+.cell.lr .ptr.pl{left:2px} .cell.lr .ptr.pr{right:2px}
+.status{font-size:.95em;min-height:3.3em;margin:0 0 12px;max-width:70ch}
+.status b{font-family:var(--f-mono);font-weight:600}
+.status .ok{color:var(--ok)} .status .bad{color:var(--bad)}
+.ctrl{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{font-family:var(--f-display);font-weight:500;font-size:15px;border:1.5px solid var(--line);background:var(--surface);color:var(--fg);border-radius:8px;padding:7px 14px;cursor:pointer}
+.btn:hover{border-color:var(--fg)}
+.btn.pri{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.ctrl label{font-family:var(--f-mono);font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.ctrl input{font-family:var(--f-mono);font-size:15px;padding:6px 10px;border:1.5px solid var(--line);border-radius:8px;background:var(--surface);color:var(--fg);width:9em}
+.ctrl input.n{width:5em}
+.step-ct{font-family:var(--f-mono);font-size:13px;color:var(--muted);margin-left:auto;font-variant-numeric:tabular-nums}
+.stats{display:flex;flex-wrap:wrap;gap:6px 22px;font-family:var(--f-mono);font-size:14px;font-variant-numeric:tabular-nums}
+.stats span{color:var(--muted)}
+
+/* matrix */
+.matrix{display:inline-grid;grid-template-columns:repeat(5,auto);gap:2px 4px;font-family:var(--f-mono);font-size:.95em;padding:10px 16px;border-left:2px solid var(--fg);border-right:2px solid var(--fg);border-radius:12px;margin:8px 0 16px}
+.matrix span{text-align:right;padding:2px 8px;font-variant-numeric:tabular-nums}
+.matrix .hl{color:var(--r);font-weight:600;background:var(--r-soft);border-radius:3px}
+
+/* traps list */
+.traps{list-style:none;padding:0;display:grid;gap:10px;max-width:78ch}
+.traps li{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin:0}
+.traps b{font-family:var(--f-display)}
+
+/* problem bank */
+.filters{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0}
+.filters button{font-family:var(--f-display);font-size:14px;border:1.5px solid var(--line);background:var(--surface);color:var(--fg);border-radius:999px;padding:5px 13px;cursor:pointer}
+.filters button[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.bank{width:100%;border-collapse:collapse;font-size:.88em;background:var(--surface);border:1px solid var(--line)}
+.bank th{font-family:var(--f-mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:left;padding:9px 12px;background:var(--sunk);font-weight:600;white-space:nowrap}
+.bank td{padding:10px 12px;border-top:1px solid var(--line);vertical-align:top}
+.bank td.name a{font-family:var(--f-display);font-weight:700;font-size:1.05em;text-decoration:none}
+.bank td.name a:hover{text-decoration:underline}
+.bank td.src{font-family:var(--f-mono);font-size:.85em;color:var(--muted);white-space:nowrap}
+.bank td.idea{color:var(--muted);min-width:14em}
+.bank tr.solved td.name a{text-decoration:line-through;text-decoration-color:var(--ok)}
+.bank input{width:18px;height:18px;accent-color:var(--ok)}
+.bank-ct{font-family:var(--f-mono);font-size:13px;color:var(--muted);margin:8px 0 0}
+.res{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;margin-top:14px}
+.res a{display:flex;flex-direction:column;gap:2px;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface);text-decoration:none;color:var(--fg)}
+.res a:hover{border-color:var(--l)}
+.res a span{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.res a b{font-family:var(--f-display);font-weight:700;font-size:1.02em}
+
+.prob h3 .src{font-family:var(--f-mono);font-size:13px;font-weight:400;color:var(--muted);margin-left:8px;white-space:normal}
+.prob h3 a{text-decoration:underline;text-decoration-color:var(--line)}
+.tabs{display:flex;gap:4px;flex-wrap:wrap}
+.tabs a{font-family:var(--f-display);font-weight:700;font-size:15px;text-decoration:none;color:var(--muted);padding:5px 12px;border-radius:8px}
+.tabs a:hover{color:var(--fg);background:var(--sunk)}
+.tabs a[aria-current="page"]{color:var(--fg);background:var(--sunk);box-shadow:inset 0 -2px 0 var(--r)}
+.cell.ghost{border-style:dashed;background:transparent}
+.cell.ghost .ix{color:var(--r)}
+.qz{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:0 0 12px;max-width:78ch}
+.qz-q{font-weight:600;margin:0 0 8px}
+.qz-n{font-family:var(--f-mono);color:var(--muted);margin-right:4px}
+.qz-code{font-family:var(--f-mono);font-size:.8em;background:var(--code-bg);color:var(--code-fg);padding:12px 14px;border-radius:8px;margin:0 0 10px;overflow-x:auto}
+.qz-opts{display:grid;gap:6px}
+.qz-opts label{display:flex;gap:10px;align-items:flex-start;padding:7px 10px;border:1.5px solid var(--line);border-radius:8px;cursor:pointer;font-size:.95em}
+.qz-opts label:hover{border-color:var(--fg)}
+.qz-opts input{margin-top:5px;accent-color:var(--l)}
+.qz-opts label.right{border-color:var(--ok);background:var(--ok-soft)}
+.qz-opts label.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.qz-fb{margin:10px 0 0;font-size:.95em}
+.qz-fb:empty{display:none}
+.qz-fb .ok{color:var(--ok)} .qz-fb .bad{color:var(--bad)}
+footer{border-top:1px solid var(--line);padding-block:24px 40px;color:var(--muted);font-size:15px}
+@media (max-width:520px){:root{--fs:17px}.cell{width:34px;height:42px;font-size:15px}.cells{gap:5px}.demo{padding:14px}.brand{font-size:14px}.tgl{font-size:13px;padding:4px 10px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}html{scroll-behavior:auto}}
+</style>
+
+<div class="bar">
+  <div class="wrap">
+    <nav class="tabs" aria-label="Lecții"><a href="#kadane" data-view="k">Kadane</a><a href="#majoritar" data-view="m">Element majoritar</a></nav>
+    <div class="bar-ctrl">
+      <button class="tgl" id="tglSol" type="button" aria-pressed="false">Arată toate soluțiile</button>
+      <button class="tgl" id="tglProj" type="button" aria-pressed="false">Mod proiector</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== KADANE ===================== -->
+<div id="view-k">
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">Clasa a VII-a · CEX Prahova</div>
+    <h1>Algoritmul lui <span class="pr">Kadane</span></h1>
+    <p class="lede">Secvența de sumă maximă și câteva variante ale ei.</p>
+  </div>
+</header>
+
+<div class="wrap layout">
+  <nav class="toc" aria-label="Cuprins Kadane">
+    <p>Cuprins</p>
+    <ol>
+      <li><a href="#k-problema">Problema</a></li>
+      <li><a href="#k-variante">Variante</a></li>
+      <li class="sub"><a href="#k-min">Suma minimă</a></li>
+      <li class="sub"><a href="#k-circ">Secvența circulară</a></li>
+      <li class="sub"><a href="#k-flip">Schimbarea semnului</a></li>
+      <li class="sub"><a href="#k-lenk">Lungime cel puțin K</a></li>
+      <li class="sub"><a href="#k-2d">Submatricea de sumă maximă</a></li>
+      <li><a href="#k-exemple">Exemple populare</a></li>
+      <li class="sub"><a href="#k-bursa">Bursa</a></li>
+      <li class="sub"><a href="#k-flipgame">Jocul inversărilor</a></li>
+      <li><a href="#k-discutie">Probleme de discuție</a></li>
+      <li class="sub"><a href="#k-elim">Cel mult o eliminare</a></li>
+      <li class="sub"><a href="#k-rep">Vectorul repetat</a></li>
+      <li class="sub"><a href="#k-prod">Produsul maxim</a></li>
+      <li><a href="#k-tema">Tema</a></li>
+    </ol>
+  </nav>
+
+  <main class="prose">
+    <section id="k-problema">
+      <div class="prob" style="border-top:0;margin-top:0;padding-top:0">
+        <h2>Secvența de sumă maximă</h2>
+        <p>Se dă un vector cu n numere întregi, pozitive și negative. Determinați suma maximă a unei secvențe nevide de elemente alăturate a[i], a[i+1], …, a[j], precum și pozițiile i și j.</p>
+        <h4>Date de intrare</h4>
+        <p>Pe prima linie se află n, iar pe a doua linie n numere întregi.</p>
+        <h4>Date de ieșire</h4>
+        <p>Pe prima linie suma maximă, pe a doua linie pozițiile de început și de sfârșit ale secvenței.</p>
+        <h4>Exemplu</h4>
+        <div class="tbl"><table class="io"><thead><tr><th>Intrare</th><th>Ieșire</th><th>Explicație</th></tr></thead><tbody><tr><td class="m">9
+-2 1 -3 4 -1 2 1 -5 4</td><td class="m">6
+4 7</td><td>Secvența 4 −1 2 1, de pe pozițiile 4…7, are suma 6.</td></tr></tbody></table></div>
+        <div class="think">
+          <p class="q">Gândiți-vă: câte secvențe are un vector cu n elemente? Putem evita să le verificăm pe toate?</p>
+          <div class="timer" data-timer></div>
+        </div>
+        <details class="hint"><summary>Indiciu</summary><div><p>Fixați capătul din dreapta i. Care este cea mai bună secvență care se termină exact în i?</p></div></details>
+        <details class="hint"><summary>Încă un indiciu</summary><div><p>Dacă cea mai bună secvență care se termină în i − 1 are suma negativă, mai merită să o continuăm cu a[i]?</p></div></details>
+        <details class="sol">
+          <summary>Soluție <span class="arr"></span></summary>
+          <div class="body">
+            <p><strong>Soluția 1.</strong> Fixăm începutul i și extindem sfârșitul j, adunând pe rând elementele. Sunt aproximativ n²/2 secvențe, deci complexitatea este O(n²). Merge pentru n de ordinul miilor, dar nu pentru n = 10⁶.</p>
+            <div class="code" data-code="k_brut"></div>
+            <p><strong>Soluția 2: algoritmul lui Kadane.</strong> Notăm cu S[i] suma maximă a unei secvențe care se termină exact în poziția i. Pentru a[i] avem doar două variante:</p>
+            <ol>
+              <li>continuăm cea mai bună secvență care se termina în i − 1: S[i − 1] + a[i];</li>
+              <li>începem o secvență nouă, formată doar din a[i].</li>
+            </ol>
+            <div class="note r"><p class="big">S[i] = max(a[i], S[i − 1] + a[i])</p></div>
+            <p>A doua variantă este mai bună exact atunci când S[i − 1] este negativ: o sumă negativă nu face decât să micșoreze ce urmează. Răspunsul este cel mai mare dintre toate valorile S[i].</p>
+            <p>Pentru că S[i] depinde doar de S[i − 1], nu avem nevoie de un vector: ne ajunge o variabilă <code>suma</code> pentru secvența curentă și una <code>best</code> pentru cel mai bun rezultat. Ca să aflăm și pozițiile, ținem minte unde a început secvența curentă.</p>
+            <div class="demo" id="demoK">
+              <div class="demo-head"><div class="legend"><span><i style="background:var(--l)"></i>începutul secvenței curente</span><span><i style="background:var(--r)"></i>poziția i</span><span><i style="background:var(--ok)"></i>secvența maximă</span></div></div>
+              <div class="stats" data-stats></div>
+              <div class="cells" data-cells></div>
+              <p class="status" data-status aria-live="polite"></p>
+              <div class="ctrl">
+                <button class="btn" type="button" data-prev>Înapoi</button>
+                <button class="btn pri" type="button" data-next>Pasul următor</button>
+                <button class="btn" type="button" data-play>Rulează</button>
+                <span class="step-ct" data-ct></span>
+              </div>
+            </div>
+            <div class="code" data-code="k_kadane"></div>
+            <p>Complexitatea este O(n) în timp, iar memoria suplimentară este O(1).</p>
+            <p>Atenție la două detalii. <code>best</code> pornește de la a[1], nu de la 0: dacă toate numerele sunt negative, răspunsul este cel mai mare dintre ele, nu 0 (secvența trebuie să fie nevidă). Iar suma poate depăși <code>int</code>, așa că folosim <code>long long</code>.</p>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <section id="k-variante">
+      <h2>Variante</h2>
+
+      <div class="prob" id="k-min">
+        <h3>Secvența de sumă minimă</h3>
+        <p>Același enunț, dar se cere suma minimă a unei secvențe nevide.</p>
+        <div class="think">
+          <p class="q">Gândiți-vă: ce schimbăm în algoritmul lui Kadane?</p>
+          <div class="timer" data-timer></div>
+        </div>
+        <details class="sol">
+          <summary>Soluție <span class="arr"></span></summary>
+          <div class="body">
+            <p>Totul se întoarce invers: acum o sumă <em>pozitivă</em> ne încurcă, pentru că mărește ce urmează. Când suma curentă devine pozitivă, începem o secvență nouă.</p>
+            <div class="code" data-code="k_min"></div>
+            <p>Varianta aceasta este folosită în următoarele două probleme.</p>
+          </div>
+        </details>
+      </div>
+
+      <div class="prob" id="k-circ">
+        <h3>Secvența circulară de sumă maximă</h3>
+        <p>Elementele vectorului sunt așezate pe un cerc: după a[n] urmează din nou a[1]. Determinați suma maximă a unei secvențe de elemente alăturate pe cerc.</p>
+        <h4>Exemplu</h4>
+        <div class="tbl"><table class="io"><thead><tr><th>Intrare</th><th>Ieșire</th><th>Explicație</th></tr></thead><tbody><tr><td class="m">5
+5 -3 5 -8 1</td><td class="m">8</td><td>Secvența 1, 5, −3, 5 trece peste capăt (a[5], a[1], a[2], a[3]).</td></tr></tbody></table></div>
+        <div class="think">
+          <p class="q">Gândiți-vă: dacă secvența trece peste capătul vectorului, ce rămâne în afara ei?</p>
+          <div class="timer" data-timer></div>
+        </div>
+        <details class="hint"><summary>Indiciu</summary><div><p>Elementele care nu sunt alese formează o secvență obișnuită, care nu trece peste capăt.</p></div></details>
+        <details class="sol">
+          <summary>Soluție <span class="arr"></span></summary>
+          <div class="body">
+            <p>Secvența cea mai bună este de unul din două tipuri:</p>
+            <ol>
+              <li>nu trece peste capăt: o găsim cu Kadane obișnuit;</li>
+              <li>trece peste capăt: atunci elementele rămase pe dinafară formează o secvență obișnuită din mijloc. Suma aleasă este <code>total − suma din mijloc</code>, deci ea este maximă când secvența din mijloc are suma minimă.</li>
+            </ol>
+            <div class="note r"><p class="big">răspuns = max(Kadane maxim, total − Kadane minim)</p></div>
+            <p>Un caz special: dacă toate numerele sunt negative, Kadane minim ia tot vectorul, iar <code>total − minim</code> ar însemna o secvență goală, cu suma 0. Atunci răspunsul este pur și simplu Kadane maxim, adică cel mai mare număr.</p>
+            <div class="code" data-code="k_circ"></div>
+          </div>
+        </details>
+      </div>
+
+      <div class="prob" id="k-flip">
+        <h3>Schimbarea semnului unei secvențe</h3>
+        <p>Putem alege o singură secvență și înmulți toate elementele ei cu −1 (sau putem să nu schimbăm nimic). Care este cea mai mare sumă a întregului vector pe care o putem obține?</p>
+        <h4>Exemplu</h4>
+        <div class="tbl"><table class="io"><thead><tr><th>Intrare</th><th>Ieșire</th><th>Explicație</th></tr></thead><tbody><tr><td class="m">5
+1 2 -10 3 4</td><td class="m">20</td><td>Schimbăm semnul lui −10: 1 + 2 + 10 + 3 + 4 = 20.</td></tr></tbody></table></div>
+        <div class="think">
+          <p class="q">Gândiți-vă: cu cât se schimbă suma totală dacă inversăm semnul unei secvențe cu suma s?</p>
+          <div class="timer" data-timer></div>
+        </div>
+        <details class="sol">
+          <summary>Soluție <span class="arr"></span></summary>
+          <div class="body">
+            <p>Dacă secvența are suma s, după inversare ea contribuie cu −s în loc de s, deci noua sumă este <code>total − s − s = total − 2·s</code>. Ca aceasta să fie cât mai mare, s trebuie să fie cât mai mic: căutăm secvența de sumă minimă. Dacă și aceasta este pozitivă, nu merită să schimbăm nimic.</p>
+            <div class="code" data-code="k_flip"></div>
+          </div>
+        </details>
+      </div>
+
+      <div class="prob" id="k-lenk">
+        <h3>Secvența de sumă maximă de lungime cel puțin K</h3>
+        <p>Se dau n, K și un vector cu n numere întregi. Determinați suma maximă a unei secvențe care are cel puțin K elemente.</p>
+        <h4>Exemplu</h4>
+        <div class="tbl"><table class="io"><thead><tr><th>Intrare</th><th>Ieșire</th></tr></thead><tbody><tr><td class="m">9 3
+-2 1 -3 4 -1 2 1 -5 4</td><td class="m">6</td></tr></tbody></table></div>
+        <div class="think">
+          <p class="q">Gândiți-vă: cum scriem suma unei secvențe folosind sumele parțiale?</p>
+          <div class="timer" data-timer></div>
+        </div>
+        <details class="hint"><summary>Indiciu</summary><div><p>Suma secvenței [j, i] este p[i] − p[j − 1]. Pentru i fixat, ce valoare a lui p[j − 1] ne convine?</p></div></details>
+        <details class="sol">
+          <summary>Soluție <span class="arr"></span></summary>
+          <div class="body">
+            <p>Calculăm sumele parțiale p[i] = a[1] + … + a[i], cu p[0] = 0. Secvența [j, i] are suma p[i] − p[j − 1] și lungimea i − j + 1 ≥ K, adică j − 1 ≤ i − K.</p>
+            <p>Pentru un capăt drept i fixat, suma este maximă când p[j − 1] este minim, unde j − 1 ia valori de la 0 la i − K. Când trecem de la i la i + 1, apare o singură valoare nouă, p[i + 1 − K], așa că minimul îl ținem într-o singură variabilă.</p>
+            <div class="code" data-code="k_lenk"></div>
+          </div>
+        </details>
+      </div>
+
+      <div class="prob" id="k-2d">
+        <h3>Submatricea de sumă maximă</h3>
+        <p>Se dă o matrice cu n linii și m coloane, cu numere întregi. Determinați suma maximă a unei submatrice. Este problema <a href="https://www.pbinfo.ro/probleme/2943/maru" target="_blank" rel="noopener">Maru</a> din lecția de Two Pointers.</p>
+        <div class="matrix" role="img" aria-label="Matrice 4 pe 5 cu submatricea de sumă maximă evidențiată pe liniile 2-4 și coloanele 2-4">
+          <span>1</span><span>2</span><span>−1</span><span>−4</span><span>−20</span>
+          <span>−8</span><span class="hl">−3</span><span class="hl">4</span><span class="hl">2</span><span>1</span>
+          <span>3</span><span class="hl">8</span><span class="hl">10</span><span class="hl">1</span><span>3</span>
+          <span>−4</span><span class="hl">−1</span><span class="hl">1</span><span class="hl">7</span><span>−6</span>
+        </div>
+        <p>Pentru matricea de mai sus răspunsul este 29.</p>
+        <div class="think">
+          <p class="q">Gândiți-vă: cum transformăm problema de pe matrice într-o problemă pe vector?</p>
+          <div class="timer" data-timer></div>
+        </div>
+        <details class="hint"><summary>Indiciu</summary><div><p>Fixați linia de sus și linia de jos a submatricei.</p></div></details>
+        <details class="sol">
+          <summary>Soluție <span class="arr"></span></summary>
+          <div class="body">
+            <p>Fixăm linia de sus i și linia de jos j. Pentru fiecare coloană k calculăm v[k] = a[i][k] + a[i+1][k] + … + a[j][k]. O submatrice cuprinsă între liniile i și j corespunde unei secvențe din v, cu aceeași sumă, deci aplicăm Kadane pe v. Când coborâm linia de jos de la j la j + 1, doar adunăm linia j + 1 la v.</p>
+            <p>Pentru liniile 2…4 din exemplu, v = −9, 4, 15, 10, −2, iar Kadane găsește 4 + 15 + 10 = 29.</p>
+            <div class="code" data-code="k_2d"></div>
+            <p>Complexitatea este O(n² · m).</p>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <section id="k-exemple">
+      <h2>Exemple populare</h2>
+      <p>Două probleme cunoscute care, la prima vedere, nu par să aibă legătură cu secvențe de sumă maximă.</p>
+
+      <div class="prob" id="k-bursa">
+        <h3>Bursa: cumpără o dată, vinde o dată</h3>
+        <p>Se cunosc prețurile unei acțiuni în n zile consecutive: p[1], p[2], …, p[n]. Putem cumpăra acțiunea într-o zi și o putem vinde într-o zi ulterioară. Care este profitul maxim? Dacă nu putem obține profit, răspunsul este 0.</p>
+        <div class="tbl"><table class="io"><thead><tr><th>Intrare</th><th>Ieșire</th><th>Explicație</th></tr></thead><tbody><tr><td class="m">6
+7 1 5 3 6 4</td><td class="m">5</td><td>Cumpărăm la 1 (ziua 2), vindem la 6 (ziua 5).</td></tr></tbody></table></div>
+        <div class="think">
+          <p class="q">Gândiți-vă: dacă vindem în ziua j, în ce zi trebuia să cumpărăm?</p>
+          <div class="timer" data-timer></div>
+        </div>
+        <details class="hint"><summary>Indiciu</summary><div><p>Scrieți diferențele dintre zile consecutive: d[k] = p[k] − p[k − 1]. Ce este profitul p[j] − p[i] în funcție de aceste diferențe?</p></div></details>
+        <details class="sol">
+          <summary>Soluție <span class="arr"></span></summary>
+          <div class="body">
+            <p><strong>Varianta 1.</strong> Dacă vindem în ziua j, cel mai bine era să fi cumpărat la cel mai mic preț de dinaintea zilei j. Parcurgem zilele și ținem minimul de până acum.</p>
+            <div class="code" data-code="k_bursa2"></div>
+            <p><strong>Varianta 2, cu Kadane.</strong> Profitul p[j] − p[i] se scrie ca o sumă de diferențe: (p[i+1] − p[i]) + (p[i+2] − p[i+1]) + … + (p[j] − p[j−1]). Deci profitul maxim este suma maximă a unei secvențe din vectorul diferențelor. Pentru exemplu, diferențele sunt −6, 4, −2, 3, −2, iar secvența 4, −2, 3 are suma 5.</p>
+            <div class="code" data-code="k_bursa"></div>
+            <p>Ambele variante sunt O(n). Ideea din varianta 2 apare des: o problemă despre <em>diferența</em> a două valori devine o problemă despre <em>suma</em> unei secvențe.</p>
+          </div>
+        </details>
+      </div>
+
+      <div class="prob" id="k-flipgame">
+        <h3>Jocul inversărilor</h3>
+        <p>Se dă un șir de n cifre 0 și 1. Trebuie să alegem exact o secvență nevidă și să inversăm toate cifrele din ea (0 devine 1, 1 devine 0). Care este numărul maxim de cifre 1 pe care îl putem obține? Problema este <a href="https://codeforces.com/problemset/problem/327/A" target="_blank" rel="noopener">Flipping Game</a> de pe Codeforces.</p>
+        <div class="tbl"><table class="io"><thead><tr><th>Intrare</th><th>Ieșire</th><th>Explicație</th></tr></thead><tbody><tr><td class="m">5
+1 0 0 1 0</td><td class="m">4</td><td>Inversăm cifrele 2…3 și obținem 1 1 1 1 0.</td></tr></tbody></table></div>
+        <div class="think">
+          <p class="q">Gândiți-vă: cu cât se schimbă numărul de cifre 1 când inversăm o secvență?</p>
+          <div class="timer" data-timer></div>
+        </div>
+        <details class="hint"><summary>Indiciu</summary><div><p>Fiecare 0 din secvență devine 1 (câștigăm unul), fiecare 1 devine 0 (pierdem unul). Înlocuiți 0 cu +1 și 1 cu −1.</p></div></details>
+        <details class="sol">
+          <summary>Soluție <span class="arr"></span></summary>
+          <div class="body">
+            <p>Dacă inversăm o secvență cu z cifre 0 și u cifre 1, numărul de cifre 1 crește cu z − u. Înlocuim fiecare 0 cu +1 și fiecare 1 cu −1: câștigul este suma secvenței. Răspunsul este numărul inițial de cifre 1 plus suma maximă găsită cu Kadane.</p>
+            <p>Atenție: secvența trebuie să fie nevidă. Dacă șirul are doar cifre 1, suma maximă este −1 și răspunsul este n − 1. De aceea <code>best</code> nu pornește de la 0.</p>
+            <div class="code" data-code="k_flipgame"></div>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <section id="k-discutie">
+      <h2>Probleme de discuție</h2>
+
+      <div class="prob" id="k-elim">
+        <h3>Suma maximă cu cel mult o eliminare</h3>
+        <p>Se dă un vector cu n numere întregi. Alegem o secvență și avem voie să eliminăm din ea cel mult un element (secvența trebuie să rămână nevidă). Care este suma maximă pe care o putem obține?</p>
+        <div class="tbl"><table class="io"><thead><tr><th>Intrare</th><th>Ieșire</th><th>Explicație</th></tr></thead><tbody><tr><td class="m">4
+1 -2 0 3</td><td class="m">4</td><td>Alegem 1 −2 0 3 și eliminăm −2.</td></tr></tbody></table></div>
+        <div class="think">
+          <p class="q">Gândiți-vă: dacă eliminăm elementul de pe poziția i, din ce două bucăți se formează secvența?</p>
+          <div class="timer" data-timer></div>
+        </div>
+        <details class="hint"><summary>Indiciu</summary><div><p>O bucată se termină în i − 1, cealaltă începe în i + 1. Puteți calcula pentru fiecare poziție cea mai bună secvență care se termină acolo și cea mai bună secvență care începe acolo?</p></div></details>
+        <details class="hint"><summary>Încă un indiciu</summary><div><p>A doua valoare se calculează cu Kadane parcurgând vectorul de la dreapta la stânga.</p></div></details>
+        <details class="sol">
+          <summary>Soluție <span class="arr"></span></summary>
+          <div class="body">
+            <p>Calculăm L[i], suma maximă a unei secvențe care se termină în i (Kadane obișnuit), și R[i], suma maximă a unei secvențe care începe în i (Kadane de la dreapta la stânga). Dacă eliminăm a[i], cea mai bună secvență este L[i − 1] + R[i + 1]. Răspunsul este maximul dintre aceste valori și Kadane fără eliminare.</p>
+            <div class="code" data-code="k_elim"></div>
+            <p>Complexitatea este O(n). Ideea de a calcula ceva „de la stânga” și ceva „de la dreapta” și apoi de a le combina în fiecare poziție apare în multe probleme.</p>
+          </div>
+        </details>
+      </div>
+
+      <div class="prob" id="k-rep">
+        <h3>Vectorul repetat de k ori</h3>
+        <p>Se dă un vector cu n numere întregi și un număr k. Scriem vectorul de k ori, unul după altul, și obținem un vector cu n · k elemente. Determinați suma maximă a unei secvențe nevide din vectorul obținut. n · k poate fi foarte mare, de exemplu 10⁵ · 10⁵, deci vectorul nu poate fi construit.</p>
+        <div class="tbl"><table class="io"><thead><tr><th>Intrare</th><th>Ieșire</th><th>Explicație</th></tr></thead><tbody>
+          <tr><td class="m">2 3
+1 2</td><td class="m">9</td><td>1 2 1 2 1 2: luăm tot.</td></tr>
+          <tr><td class="m">3 2
+1 -2 1</td><td class="m">2</td><td>1 −2 1 1 −2 1: secvența 1 1 din mijloc.</td></tr>
+        </tbody></table></div>
+        <div class="think">
+          <p class="q">Gândiți-vă: când merită ca secvența să conțină o copie întreagă a vectorului?</p>
+          <div class="timer" data-timer></div>
+        </div>
+        <details class="hint"><summary>Indiciu</summary><div><p>O copie întreagă adaugă la sumă exact suma totală a vectorului. Discutați după semnul ei.</p></div></details>
+        <details class="hint"><summary>Încă un indiciu</summary><div><p>Ce se poate obține cu doar două copii? O secvență poate începe în prima copie și se poate termina în a doua.</p></div></details>
+        <details class="sol">
+          <summary>Soluție <span class="arr"></span></summary>
+          <div class="body">
+            <p>Dacă k = 1, aplicăm Kadane obișnuit. Altfel, aplicăm Kadane pe două copii ale vectorului (fără să le construim: elementul de pe poziția i este a[(i − 1) % n + 1]). Astfel prindem și secvențele care trec de la o copie la următoarea.</p>
+            <p>Dacă suma totală este pozitivă, merită să adăugăm la mijloc toate celelalte k − 2 copii întregi, fiecare aducând suma totală. Dacă este negativă sau 0, nu merită.</p>
+            <div class="code" data-code="k_rep"></div>
+          </div>
+        </details>
+      </div>
+
+      <div class="prob" id="k-prod">
+        <h3>Produsul maxim</h3>
+        <p>Mai grea. Se dă un vector cu n numere întregi (pozitive, negative sau 0). Determinați produsul maxim al unei secvențe nevide. Pentru ca produsele să încapă în <code>long long</code>, considerăm n ≤ 18 și numere între −10 și 10.</p>
+        <div class="tbl"><table class="io"><thead><tr><th>Intrare</th><th>Ieșire</th><th>Explicație</th></tr></thead><tbody>
+          <tr><td class="m">4
+2 3 -2 4</td><td class="m">6</td><td>2 · 3</td></tr>
+          <tr><td class="m">6
+-2 0 -1 3 -4 2</td><td class="m">24</td><td>(−1) · 3 · (−4) · 2</td></tr>
+        </tbody></table></div>
+        <div class="think">
+          <p class="q">Gândiți-vă: de ce nu merge Kadane direct, cu produse în loc de sume?</p>
+          <div class="timer" data-timer></div>
+        </div>
+        <details class="hint"><summary>Indiciu</summary><div><p>Un produs foarte mic (foarte negativ) poate deveni foarte mare dacă îl înmulțim cu un număr negativ.</p></div></details>
+        <details class="sol">
+          <summary>Soluție <span class="arr"></span></summary>
+          <div class="body">
+            <p>Pentru fiecare poziție i ținem două valori: cel mai mare și cel mai mic produs al unei secvențe care se termină în i. Noul element x poate începe o secvență nouă, poate continua secvența cu produs maxim sau pe cea cu produs minim. Dacă x este negativ, minimul înmulțit cu x devine candidat la maxim.</p>
+            <div class="code" data-code="k_prod"></div>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <section id="k-tema">
+      <h2>Tema</h2>
+      <ul>
+        <li><a href="https://infoarena.ro/problema/ssm" target="_blank" rel="noopener">ssm</a> (infoarena): problema clasică, cu afișarea pozițiilor</li>
+        <li><a href="https://cses.fi/problemset/task/1643" target="_blank" rel="noopener">Maximum Subarray Sum</a> (CSES)</li>
+        <li><a href="https://leetcode.com/problems/maximum-subarray/" target="_blank" rel="noopener">Maximum Subarray</a> (LeetCode #53)</li>
+        <li><a href="https://leetcode.com/problems/maximum-sum-circular-subarray/" target="_blank" rel="noopener">Maximum Sum Circular Subarray</a> (LeetCode #918): varianta circulară</li>
+        <li><a href="https://www.pbinfo.ro/probleme/2943/maru" target="_blank" rel="noopener">Maru</a> (pbinfo #2943): submatricea de sumă maximă</li>
+        <li><a href="https://leetcode.com/problems/best-time-to-buy-and-sell-stock/" target="_blank" rel="noopener">Best Time to Buy and Sell Stock</a> (LeetCode #121): bursa</li>
+        <li><a href="https://codeforces.com/problemset/problem/327/A" target="_blank" rel="noopener">Flipping Game</a> (Codeforces 327A): jocul inversărilor</li>
+        <li><a href="https://leetcode.com/problems/maximum-subarray-sum-with-one-deletion/" target="_blank" rel="noopener">Maximum Subarray Sum with One Deletion</a> (LeetCode #1186)</li>
+        <li><a href="https://leetcode.com/problems/k-concatenation-maximum-sum/" target="_blank" rel="noopener">K-Concatenation Maximum Sum</a> (LeetCode #1191): vectorul repetat (acolo secvența poate fi și goală)</li>
+        <li><a href="https://leetcode.com/problems/maximum-product-subarray/" target="_blank" rel="noopener">Maximum Product Subarray</a> (LeetCode #152)</li>
+      </ul>
+    </section>
+  </main>
+</div>
+<footer><div class="wrap">Clasa a VII-a · CEX Prahova</div></footer>
+</div>
+
+<!-- ===================== MAJORITAR ===================== -->
+<div id="view-m" hidden>
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">Clasa a VII-a · CEX Prahova</div>
+    <h1>Elementul <span class="pl">majoritar</span></h1>
+    <p class="lede">Algoritmul de vot Boyer-Moore, de ce funcționează și unde îl folosim.</p>
+  </div>
+</header>
+
+<div class="wrap layout">
+  <nav class="toc" aria-label="Cuprins Element majoritar">
+    <p>Cuprins</p>
+    <ol>
+      <li><a href="#m-problema">Problema</a></li>
+      <li><a href="#m-teorie">De ce funcționează votul?</a></li>
+      <li><a href="#m-exemple">Exemple populare</a></li>
+      <li class="sub"><a href="#m-flux">Fără să păstrăm numerele</a></li>
+      <li class="sub"><a href="#m-half">Cel puțin jumătate</a></li>
+      <li class="sub"><a href="#m-n3">Varianta n/3</a></li>
+      <li><a href="#m-discutie">Probleme de discuție</a></li>
+      <li class="sub"><a href="#m-pairs">Perechi diferite</a></li>
+      <li class="sub"><a href="#m-reorg">Fără vecini egali</a></li>
+      <li class="sub"><a href="#m-changes">Cele mai puține modificări</a></li>
+      <li class="sub"><a href="#m-longest">Cea mai lungă secvență</a></li>
+      <li><a href="#m-tema">Tema</a></li>
+    </ol>
+  </nav>
+
+  <main class="prose">
+    <section id="m-problema">
+      <div class="prob" style="border-top:0;margin-top:0;padding-top:0">
+        <h2>Elementul majoritar</h2>
+        <p>Se dă un vector cu n numere naturale. Un element se numește <strong>majoritar</strong> dacă apare de mai mult de n/2 ori (adică de cel puțin n/2 + 1 ori, cu împărțire întreagă). Afișați elementul majoritar sau −1 dacă acesta nu există.</p>
+        <h4>Exemplu</h4>
+        <div class="tbl"><table class="io"><thead><tr><th>Intrare</th><th>Ieșire</th><th>Explicație</th></tr></thead><tbody>
+          <tr><td class="m">7
+2 2 1 1 1 2 2</td><td class="m">2</td><td>2 apare de 4 ori, iar 4 &gt; 7/2.</td></tr>
+          <tr><td class="m">6
+3 1 3 2 1 3</td><td class="m">-1</td><td>3 apare de 3 ori, dar 3 nu este mai mare decât 6/2.</td></tr>
+        </tbody></table></div>
+        <p>Observați că un vector poate avea cel mult un element majoritar: două elemente care apar fiecare de mai mult de jumătate din ori nu încap în vector.</p>
+        <div class="think">
+          <p class="q">Gândiți-vă: cum rezolvăm cu ce știm deja? Ce timp și câtă memorie folosește fiecare idee?</p>
+          <div class="timer" data-timer></div>
+        </div>
+        <details class="hint"><summary>Indiciu</summary><div><p>Dacă sortăm vectorul, pe ce poziție se află sigur elementul majoritar, dacă există?</p></div></details>
+        <details class="hint"><summary>Încă un indiciu</summary><div><p>Imaginați-vă că scoatem din vector, de câte ori putem, câte două elemente <em>diferite</em>. Ce rămâne la final?</p></div></details>
+        <details class="sol">
+          <summary>Soluție <span class="arr"></span></summary>
+          <div class="body">
+            <p><strong>Soluția 1.</strong> Pentru fiecare element numărăm de câte ori apare în vector. Complexitatea este O(n²).</p>
+            <div class="code" data-code="m_brut"></div>
+
+            <p><strong>Soluția 2: vector de frecvență.</strong> Dacă valorile sunt mici (de exemplu cel mult 10⁶), numărăm aparițiile într-un vector de frecvență. Timpul este O(n), dar memoria depinde de valoarea maximă, iar dacă valorile ajung la 10⁹ metoda nu mai merge.</p>
+            <div class="code" data-code="m_frecv"></div>
+
+            <p><strong>Soluția 3: sortare.</strong> Elementul majoritar ocupă mai mult de jumătate din vector, deci după sortare blocul lui de valori egale acoperă sigur poziția din mijloc. Luăm elementul din mijloc ca <em>candidat</em> și verificăm de câte ori apare. Complexitatea este O(n log n), din cauza sortării.</p>
+            <div class="code" data-code="m_sort"></div>
+
+            <p><strong>Soluția 4: algoritmul de vot Boyer-Moore.</strong> Ideea este <em>anularea reciprocă</em>. Dacă scoatem din vector două elemente diferite, elementul majoritar rămâne majoritar în ce a rămas: am scos cel mult o apariție a lui și cel puțin o apariție a altui element. Repetând, la final rămân doar valori egale, iar dacă există un element majoritar, el este cel rămas.</p>
+            <p>Nu scoatem efectiv elemente. Ținem un <code>candidat</code> și un <code>contor</code>:</p>
+            <ol>
+              <li>dacă contorul este 0, elementul curent devine candidat, cu contorul 1;</li>
+              <li>dacă elementul curent este egal cu candidatul, creștem contorul;</li>
+              <li>altfel scădem contorul: elementul curent „anulează” o apariție a candidatului.</li>
+            </ol>
+            <div class="demo" id="demoM">
+              <div class="stats" data-stats></div>
+              <div class="cells" data-cells></div>
+              <p class="status" data-status aria-live="polite"></p>
+              <div class="ctrl">
+                <label for="mIn">Vector <input id="mIn" value="2 2 1 1 1 2 2" autocomplete="off" spellcheck="false" style="width:13em"></label>
+                <button class="btn" type="button" data-prev>Înapoi</button>
+                <button class="btn pri" type="button" data-next>Pasul următor</button>
+                <button class="btn" type="button" data-play>Rulează</button>
+                <span class="step-ct" data-ct></span>
+              </div>
+            </div>
+            <p>La final, candidatul este singurul element care <em>poate</em> fi majoritar, dar nu este sigur că este. De exemplu, pentru 1 2 3 candidatul rămâne 3, deși niciun element nu este majoritar. De aceea facem a doua parcurgere, în care numărăm aparițiile candidatului. Încercați în simulare vectorul <span class="mono">1 2 3</span>.</p>
+            <div class="code" data-code="m_bm"></div>
+            <p>Complexitatea este O(n) în timp și O(1) memorie suplimentară, indiferent cât de mari sunt valorile.</p>
+            <div class="tbl"><table class="io"><thead><tr><th>Soluția</th><th>Timp</th><th>Memorie suplimentară</th></tr></thead><tbody>
+              <tr><td>1. numărare pentru fiecare element</td><td class="m">O(n²)</td><td class="m">O(1)</td></tr>
+              <tr><td>2. vector de frecvență</td><td class="m">O(n)</td><td class="m">cât valoarea maximă</td></tr>
+              <tr><td>3. sortare</td><td class="m">O(n log n)</td><td class="m">O(1)</td></tr>
+              <tr><td>4. Boyer-Moore</td><td class="m">O(n)</td><td class="m">O(1)</td></tr>
+            </tbody></table></div>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <section id="m-teorie">
+      <h2>De ce funcționează votul?</h2>
+      <p>Ne putem imagina contorul ca pe o grămadă de bilețele, toate cu aceeași valoare scrisă pe ele, valoarea candidatului. Când vine un element egal cu candidatul, mai punem un bilețel. Când vine un element diferit, aruncăm un bilețel din grămadă împreună cu elementul nou: am eliminat o <strong>pereche de două valori diferite</strong>. Când grămada se golește, următorul element începe o grămadă nouă.</p>
+      <p>Să presupunem că x este majoritar, deci apare de mai mult de n/2 ori. Fiecare pereche aruncată conține cel mult un x, pentru că cele două valori sunt diferite. Dacă toate aparițiile lui x ar fi aruncate, ar trebui să existe cel puțin tot atâtea elemente diferite de x, deci în total cel puțin 2 · (numărul de x) &gt; n elemente. Asta e imposibil, deci la final grămada conține x, iar candidatul este x.</p>
+      <p>Raționamentul arată doar că, <em>dacă</em> există un element majoritar, el este candidatul. Nu spune nimic dacă nu există, de aceea verificarea este obligatorie.</p>
+
+      <h3>Urmăriți votul pe hârtie</h3>
+      <p>Pentru vectorul <span class="mono">3 3 4 2 4 4 2 4 4</span> (n = 9, 4 apare de 5 ori):</p>
+      <div class="tbl"><table class="io"><thead><tr><th>i</th><th>a[i]</th><th>Ce se întâmplă</th><th>candidat</th><th>contor</th></tr></thead><tbody>
+        <tr><td class="m">1</td><td class="m">3</td><td>contor 0: 3 devine candidat</td><td class="m">3</td><td class="m">1</td></tr>
+        <tr><td class="m">2</td><td class="m">3</td><td>egal cu candidatul</td><td class="m">3</td><td class="m">2</td></tr>
+        <tr><td class="m">3</td><td class="m">4</td><td>diferit: perechea (3, 4) se anulează</td><td class="m">3</td><td class="m">1</td></tr>
+        <tr><td class="m">4</td><td class="m">2</td><td>diferit: perechea (3, 2) se anulează</td><td class="m">3</td><td class="m">0</td></tr>
+        <tr><td class="m">5</td><td class="m">4</td><td>contor 0: 4 devine candidat</td><td class="m">4</td><td class="m">1</td></tr>
+        <tr><td class="m">6</td><td class="m">4</td><td>egal cu candidatul</td><td class="m">4</td><td class="m">2</td></tr>
+        <tr><td class="m">7</td><td class="m">2</td><td>diferit: perechea (4, 2) se anulează</td><td class="m">4</td><td class="m">1</td></tr>
+        <tr><td class="m">8</td><td class="m">4</td><td>egal cu candidatul</td><td class="m">4</td><td class="m">2</td></tr>
+        <tr><td class="m">9</td><td class="m">4</td><td>egal cu candidatul</td><td class="m">4</td><td class="m">3</td></tr>
+      </tbody></table></div>
+      <p>Candidatul final este 4. La verificare găsim 5 apariții, iar 5 &gt; 9/2 = 4, deci 4 este majoritar.</p>
+
+      <h3>Greșeli frecvente</h3>
+      <p>Contorul de la final <strong>nu</strong> este frecvența candidatului. În exemplul de mai sus contorul este 3, dar 4 apare de 5 ori. Frecvența o aflăm doar la verificare.</p>
+      <p>„Mai mult de n/2 ori” înseamnă <code>cnt &gt; n / 2</code> cu împărțire întreagă, sau, fără împărțire, <code>2 * cnt &gt; n</code>. Pentru n = 6, un element care apare de 3 ori nu este majoritar.</p>
+      <p>Verificarea nu se sare decât dacă enunțul garantează că există un element majoritar.</p>
+    </section>
+
+    <section id="m-exemple">
+      <h2>Exemple populare</h2>
+
+      <div class="prob" id="m-flux">
+        <h3>Majoritar fără să păstrăm numerele</h3>
+        <p>Se citesc n numere, cu n până la 10⁷, iar valorile pot ajunge la 10⁹. Se garantează că există un element majoritar. Afișați-l. Limita de memorie este mică, astfel încât nu putem păstra numerele într-un vector.</p>
+        <div class="tbl"><table class="io"><thead><tr><th>Intrare</th><th>Ieșire</th></tr></thead><tbody><tr><td class="m">7
+5 9 5 5 2 5 9</td><td class="m">5</td></tr></tbody></table></div>
+        <div class="think">
+          <p class="q">Gândiți-vă: care dintre cele patru soluții merg aici?</p>
+          <div class="timer" data-timer></div>
+        </div>
+        <details class="sol">
+          <summary>Soluție <span class="arr"></span></summary>
+          <div class="body">
+            <p>Soluțiile 1 și 3 au nevoie de toate numerele, iar soluția 2 de un vector de frecvență de mărimea valorilor. Votul are nevoie doar de două variabile, iar pentru că existența este garantată, nu facem verificarea. Așa citim fiecare număr o singură dată și nu păstrăm nimic.</p>
+            <div class="code" data-code="m_flux"></div>
+            <p>Acesta este principalul avantaj al votului Boyer-Moore față de celelalte metode și motivul pentru care apare des la concursuri.</p>
+          </div>
+        </details>
+      </div>
+
+      <div class="prob" id="m-half">
+        <h3>Cel puțin jumătate</h3>
+        <p>Aceeași problemă, dar acum ne interesează elementele care apar de <strong>cel puțin</strong> n/2 ori (adică 2 · cnt ≥ n). Pot exista două astfel de elemente, de exemplu în <span class="mono">1 2 1 2</span>. Afișați-le în ordine crescătoare, sau −1 dacă nu există niciunul.</p>
+        <div class="tbl"><table class="io"><thead><tr><th>Intrare</th><th>Ieșire</th></tr></thead><tbody>
+          <tr><td class="m">6
+2 2 1 2 3 2</td><td class="m">2</td></tr>
+          <tr><td class="m">4
+1 2 1 2</td><td class="m">1 2</td></tr>
+        </tbody></table></div>
+        <div class="think">
+          <p class="q">Gândiți-vă: votul garantează ceva doar pentru „mai mult de jumătate”. Cum ne aducem în acea situație?</p>
+          <div class="timer" data-timer></div>
+        </div>
+        <details class="hint"><summary>Indiciu</summary><div><p>Scoateți un singur element, de exemplu ultimul. Ce se întâmplă cu un element care apărea de exact n/2 ori, dar nu era pe ultima poziție?</p></div></details>
+        <details class="sol">
+          <summary>Soluție <span class="arr"></span></summary>
+          <div class="body">
+            <p>Fie x un element care apare de cel puțin n/2 ori. Avem două cazuri:</p>
+            <ol>
+              <li>x este chiar a[n]: îl verificăm direct;</li>
+              <li>x nu este a[n]: atunci în primele n − 1 elemente x apare de cel puțin n/2 ori, adică de mai mult de (n − 1)/2 ori. Deci x este majoritar în a[1..n−1] și îl găsim cu votul.</li>
+            </ol>
+            <p>Avem așadar doar doi candidați: a[n] și candidatul votului pe primele n − 1 elemente. Îi verificăm pe amândoi.</p>
+            <div class="code" data-code="m_half"></div>
+          </div>
+        </details>
+      </div>
+
+      <div class="prob" id="m-n3">
+        <h3>Varianta n/3</h3>
+        <p>Afișați toate elementele care apar de mai mult de n/3 ori, sau −1 dacă nu există niciunul.</p>
+        <div class="tbl"><table class="io"><thead><tr><th>Intrare</th><th>Ieșire</th><th>Explicație</th></tr></thead><tbody><tr><td class="m">6
+3 1 3 2 1 3</td><td class="m">3</td><td>3 apare de 3 ori, iar 3 &gt; 6/3. 1 apare de 2 ori, iar 2 nu este mai mare decât 2.</td></tr></tbody></table></div>
+        <div class="think">
+          <p class="q">Gândiți-vă: câte astfel de elemente pot exista cel mult?</p>
+          <div class="timer" data-timer></div>
+        </div>
+        <details class="hint"><summary>Indiciu</summary><div><p>Cel mult două. Încercați să țineți doi candidați, fiecare cu contorul lui. Ce anulăm acum, perechi sau grupuri de câte trei elemente diferite?</p></div></details>
+        <details class="sol">
+          <summary>Soluție <span class="arr"></span></summary>
+          <div class="body">
+            <p>Pot exista cel mult două astfel de elemente, pentru că trei elemente care apar fiecare de mai mult de n/3 ori ar însemna mai mult de n elemente. Generalizăm votul: ținem doi candidați, c1 și c2, cu contoarele k1 și k2.</p>
+            <ol>
+              <li>dacă x este egal cu un candidat, creștem contorul acelui candidat;</li>
+              <li>altfel, dacă unul dintre contoare este 0, x devine candidat în locul lui, cu contorul 1;</li>
+              <li>altfel scădem ambele contoare: am anulat un grup de trei elemente diferite (x, c1, c2).</li>
+            </ol>
+            <p>Raționamentul este același ca la n/2: un grup aruncat conține cel mult o apariție a unui element, deci un element care apare de mai mult de n/3 ori nu poate fi aruncat complet. La final verificăm ambii candidați.</p>
+            <div class="code" data-code="m_n3"></div>
+            <p>Aceeași idee merge pentru n/k, cu k − 1 candidați.</p>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <section id="m-discutie">
+      <h2>Probleme de discuție</h2>
+
+      <div class="prob" id="m-pairs">
+        <h3>Perechi de elemente diferite</h3>
+        <p>La o serbare sunt n elevi (n par), fiecare cu numărul clasei lui. Profesorul vrea să-i împartă în n/2 perechi astfel încât în fiecare pereche să fie doi elevi din clase diferite. Se poate? Dacă da, afișați o împărțire.</p>
+        <div class="tbl"><table class="io"><thead><tr><th>Intrare</th><th>Ieșire</th></tr></thead><tbody>
+          <tr><td class="m">8
+1 1 2 2 2 3 3 1</td><td class="m">DA
+1 2
+1 2
+1 3
+2 3</td></tr>
+          <tr><td class="m">6
+1 1 1 1 2 3</td><td class="m">NU</td></tr>
+        </tbody></table></div>
+        <div class="think">
+          <p class="q">Gândiți-vă: în al doilea exemplu, de ce nu se poate? Când, în general, nu se poate?</p>
+          <div class="timer" data-timer></div>
+        </div>
+        <details class="hint"><summary>Indiciu</summary><div><p>Fiecare elev din clasa 1 are nevoie de un partener din altă clasă. Câți elevi din clasa 1 pot fi, cel mult?</p></div></details>
+        <details class="hint"><summary>Încă un indiciu</summary><div><p>Pentru construcție: sortați și puneți în pereche elementul de pe poziția i cu cel de pe poziția i + n/2.</p></div></details>
+        <details class="sol">
+          <summary>Soluție <span class="arr"></span></summary>
+          <div class="body">
+            <p>Dacă o clasă are mai mult de n/2 elevi, fiecare dintre ei are nevoie de un partener din altă clasă, dar nu există suficienți. Deci <strong>nu se poate exact atunci când există un element majoritar</strong>. Este chiar ideea votului, privită invers: votul anulează perechi de valori diferite, iar aici vrem ca <em>toate</em> elementele să fie anulate în perechi.</p>
+            <p>Dacă nu există element majoritar, sortăm și facem perechile (a[i], a[i + n/2]). O valoare care apare de cel mult n/2 ori ocupă după sortare un bloc de cel mult n/2 poziții consecutive, deci nu poate fi în același timp pe poziția i și pe poziția i + n/2. Bonus: dacă vreo pereche iese cu elemente egale, înseamnă că acel bloc are mai mult de n/2 poziții, adică am găsit un element majoritar.</p>
+            <div class="code" data-code="m_pairs"></div>
+          </div>
+        </details>
+      </div>
+
+      <div class="prob" id="m-reorg">
+        <h3>Fără doi vecini egali</h3>
+        <p>Se dau n numere naturale (cel mult 100 000). Rearanjați-le astfel încât oricare două numere vecine să fie diferite, sau afișați −1 dacă nu se poate.</p>
+        <div class="tbl"><table class="io"><thead><tr><th>Intrare</th><th>Ieșire</th></tr></thead><tbody>
+          <tr><td class="m">7
+1 1 1 2 2 3 1</td><td class="m">1 2 1 2 1 3 1</td></tr>
+          <tr><td class="m">4
+5 5 5 1</td><td class="m">-1</td></tr>
+        </tbody></table></div>
+        <div class="think">
+          <p class="q">Gândiți-vă: de câte ori poate apărea cel mult o valoare, ca rearanjarea să fie posibilă?</p>
+          <div class="timer" data-timer></div>
+        </div>
+        <details class="hint"><summary>Indiciu</summary><div><p>Cea mai „aglomerată” valoare trebuie să aibă mereu ceva între aparițiile ei. Pe câte poziții o putem pune, cel mult, fără să fie vecine?</p></div></details>
+        <details class="hint"><summary>Încă un indiciu</summary><div><p>Puneți valoarea cea mai frecventă pe pozițiile 1, 3, 5, …, apoi continuați cu celelalte valori, pe rând, pe pozițiile impare rămase și apoi pe 2, 4, 6, …</p></div></details>
+        <details class="sol">
+          <summary>Soluție <span class="arr"></span></summary>
+          <div class="body">
+            <p>O valoare poate ocupa cel mult pozițiile 1, 3, 5, …, adică (n + 1)/2 poziții, fără să aibă doi vecini egali. Deci condiția este ca frecvența maximă să fie cel mult (n + 1)/2. Este o „rudă” a elementului majoritar: pentru n par, condiția spune exact că nu există element majoritar.</p>
+            <p>Construcție: așezăm întâi valoarea cea mai frecventă pe pozițiile 1, 3, 5, …, apoi celelalte valori, una câte una, continuând pe pozițiile impare și apoi pe cele pare. Aparițiile aceleiași valori ajung pe poziții de aceeași paritate, deci la distanță cel puțin 2. Excepția este o valoare care trece de la pozițiile impare la cele pare. Ea nu poate ajunge să aibă doi vecini egali, pentru că valoarea cea mai frecventă ocupă primele poziții impare.</p>
+            <div class="code" data-code="m_reorg"></div>
+          </div>
+        </details>
+      </div>
+
+      <div class="prob" id="m-changes">
+        <h3>Cele mai puține modificări</h3>
+        <p>Se dau n numere naturale (cel mult 10⁶). O modificare înseamnă înlocuirea unui număr cu orice alt număr. Care este numărul minim de modificări după care vectorul are un element majoritar?</p>
+        <div class="tbl"><table class="io"><thead><tr><th>Intrare</th><th>Ieșire</th><th>Explicație</th></tr></thead><tbody><tr><td class="m">7
+1 2 3 1 2 3 4</td><td class="m">2</td><td>Transformăm 3 și 4 în 1: 1 apare de 4 ori.</td></tr></tbody></table></div>
+        <div class="think">
+          <p class="q">Gândiți-vă: ce valoare merită să devină majoritară?</p>
+          <div class="timer" data-timer></div>
+        </div>
+        <details class="sol">
+          <summary>Soluție <span class="arr"></span></summary>
+          <div class="body">
+            <p>Merită să alegem valoarea care apare deja cel mai des, cu frecvența fmax. Ca să devină majoritară, are nevoie de n/2 + 1 apariții, deci facem n/2 + 1 − fmax modificări, sau 0 dacă e deja majoritară.</p>
+            <div class="code" data-code="m_changes"></div>
+            <p>O problemă scurtă, dar bună pentru a verifica dacă definiția „mai mult de jumătate” a fost înțeleasă corect.</p>
+          </div>
+        </details>
+      </div>
+
+      <div class="prob" id="m-longest">
+        <h3>Cea mai lungă secvență în care x este majoritar</h3>
+        <p>Mai grea. Se dă un vector cu n numere și o valoare x. Determinați lungimea maximă a unei secvențe în care x este element majoritar (apare de mai mult de jumătate din lungimea secvenței), sau 0 dacă nu există.</p>
+        <div class="tbl"><table class="io"><thead><tr><th>Intrare</th><th>Ieșire</th><th>Explicație</th></tr></thead><tbody><tr><td class="m">9 1
+1 2 2 1 1 3 2 2 1</td><td class="m">5</td><td>Secvența 1 2 2 1 1 are trei de 1 din 5 elemente.</td></tr></tbody></table></div>
+        <div class="think">
+          <p class="q">Gândiți-vă: cum scriem „x este majoritar în secvență” ca o condiție despre o sumă?</p>
+          <div class="timer" data-timer></div>
+        </div>
+        <details class="hint"><summary>Indiciu</summary><div><p>Înlocuiți fiecare x cu +1 și fiecare alt număr cu −1. x este majoritar exact când suma secvenței este pozitivă. Exact ca la votul Boyer-Moore!</p></div></details>
+        <details class="hint"><summary>Încă un indiciu</summary><div><p>Cu sumele parțiale p, suma secvenței [j + 1, i] este p[i] − p[j]. Pentru i fixat căutăm cel mai mic j cu p[j] &lt; p[i]. Sumele parțiale cresc sau scad mereu cu câte 1: unde apare prima dată o valoare mai mică decât p[i]?</p></div></details>
+        <details class="sol">
+          <summary>Soluție <span class="arr"></span></summary>
+          <div class="body">
+            <p>Cu înlocuirea +1/−1, x este majoritar în [j + 1, i] exact când p[i] − p[j] &gt; 0, adică p[j] &lt; p[i]. Pentru i fixat vrem j cât mai mic.</p>
+            <ul>
+              <li>Dacă p[i] &gt; 0, merge j = 0 (p[0] = 0), deci toată secvența [1, i] este bună.</li>
+              <li>Altfel, pentru că p pornește de la 0 și se schimbă mereu cu câte 1, prima poziție unde p ajunge sub p[i] este prima poziție unde p ia valoarea p[i] − 1. Ținem minte, pentru fiecare valoare, prima poziție unde apare. Valorile pot fi negative, așa că le deplasăm cu n.</li>
+            </ul>
+            <div class="code" data-code="m_longest"></div>
+            <p>Complexitatea este O(n). Dacă întrebarea era doar <em>suma maximă</em> a unei secvențe în vectorul +1/−1, adică „cu cât poate depăși x restul”, era exact algoritmul lui Kadane.</p>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <section id="m-tema">
+      <h2>Tema</h2>
+      <ul>
+        <li><a href="https://infoarena.ro/problema/elmaj" target="_blank" rel="noopener">elmaj</a> (infoarena): problema clasică a elementului majoritar</li>
+        <li><a href="https://leetcode.com/problems/majority-element/" target="_blank" rel="noopener">Majority Element</a> (LeetCode #169)</li>
+        <li><a href="https://leetcode.com/problems/majority-element-ii/" target="_blank" rel="noopener">Majority Element II</a> (LeetCode #229): varianta n/3</li>
+        <li><a href="https://leetcode.com/problems/reorganize-string/" target="_blank" rel="noopener">Reorganize String</a> (LeetCode #767): fără doi vecini egali, pe litere</li>
+        <li><a href="https://leetcode.com/problems/longest-well-performing-interval/" target="_blank" rel="noopener">Longest Well-Performing Interval</a> (LeetCode #1124): cea mai lungă secvență cu majoritate</li>
+      </ul>
+    </section>
+  </main>
+</div>
+<footer><div class="wrap">Clasa a VII-a · CEX Prahova</div></footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>
+const store = { get(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }, set(k,v){ try { localStorage.setItem(k,v); } catch(e){} } };
+
+const CODE = {
+m_flux:`#include <iostream>
+using namespace std;
+
+int main()
+{
+    int n, x, cand = 0, contor = 0;
+    cin >> n;
+    for (int i = 1; i <= n; i++)
+    {
+        cin >> x;                 // nu păstrăm numerele, doar votăm
+        if (contor == 0)
+        {
+            cand = x;
+            contor = 1;
+        }
+        else if (x == cand)
+            contor++;
+        else
+            contor--;
+    }
+    cout << cand;                 // se garantează că există majoritar
+    return 0;
+}`,
+m_half:`#include <iostream>
+using namespace std;
+
+int n, a[1000001];
+
+// votul Boyer-Moore pe pozițiile 1..m
+int candidat(int m)
+{
+    int cand = 0, contor = 0;
+    for (int i = 1; i <= m; i++)
+    {
+        if (contor == 0) { cand = a[i]; contor = 1; }
+        else if (a[i] == cand) contor++;
+        else contor--;
+    }
+    return cand;
+}
+
+bool bun(int x)                   // apare x de cel puțin n/2 ori?
+{
+    int cnt = 0;
+    for (int i = 1; i <= n; i++)
+        if (a[i] == x) cnt++;
+    return 2 * cnt >= n;
+}
+
+int main()
+{
+    cin >> n;
+    for (int i = 1; i <= n; i++) cin >> a[i];
+
+    int c1 = a[n];                // candidatul 1: ultimul element
+    int c2 = candidat(n - 1);     // candidatul 2: majoritarul din primele n-1
+
+    bool b1 = bun(c1), b2 = (c2 != c1 && n > 1 && bun(c2));
+    if (b1 && b2) cout << min(c1, c2) << ' ' << max(c1, c2);
+    else if (b1) cout << c1;
+    else if (b2) cout << c2;
+    else cout << -1;
+    return 0;
+}`,
+m_pairs:`#include <iostream>
+#include <algorithm>
+using namespace std;
+
+int n, a[200001];
+
+int main()
+{
+    cin >> n;                     // n este par
+    for (int i = 1; i <= n; i++) cin >> a[i];
+    sort(a + 1, a + n + 1);
+
+    int h = n / 2;
+    for (int i = 1; i <= h; i++)
+        if (a[i] == a[i + h])     // un bloc de valori egale acoperă mai mult de n/2 poziții
+        {
+            cout << "NU";
+            return 0;
+        }
+
+    cout << "DA\\n";
+    for (int i = 1; i <= h; i++)
+        cout << a[i] << ' ' << a[i + h] << '\\n';
+    return 0;
+}`,
+m_reorg:`#include <iostream>
+using namespace std;
+
+const int VMAX = 100000;
+int n, a[200001], fr[VMAX + 1], b[200001];
+
+int main()
+{
+    cin >> n;
+    for (int i = 1; i <= n; i++)
+    {
+        cin >> a[i];
+        fr[a[i]]++;
+    }
+
+    int vmax = 0;                         // valoarea cu frecvența cea mai mare
+    for (int v = 0; v <= VMAX; v++)
+        if (fr[v] > fr[vmax]) vmax = v;
+
+    if (fr[vmax] > (n + 1) / 2)
+    {
+        cout << -1;
+        return 0;
+    }
+
+    // completăm întâi pozițiile 1, 3, 5, ..., apoi 2, 4, 6, ...
+    // începând cu valoarea cea mai frecventă, apoi celelalte, pe rând
+    int poz = 1;
+    for (int k = 0; k <= VMAX + 1; k++)
+    {
+        int v = (k == 0 ? vmax : k - 1);
+        if (k > 0 && v == vmax) continue;
+        while (fr[v] > 0)
+        {
+            b[poz] = v;
+            fr[v]--;
+            poz += 2;
+            if (poz > n) poz = 2;         // am terminat pozițiile impare
+        }
+    }
+
+    for (int i = 1; i <= n; i++) cout << b[i] << ' ';
+    return 0;
+}`,
+m_changes:`#include <iostream>
+using namespace std;
+
+int n, x, fr[1000001];
+
+int main()
+{
+    cin >> n;
+    int fmax = 0;
+    for (int i = 1; i <= n; i++)
+    {
+        cin >> x;
+        fr[x]++;
+        if (fr[x] > fmax) fmax = fr[x];
+    }
+    // vrem ca valoarea cea mai frecventă să apară de n/2 + 1 ori
+    int nevoie = n / 2 + 1 - fmax;
+    if (nevoie < 0) nevoie = 0;
+    cout << nevoie;
+    return 0;
+}`,
+m_longest:`#include <iostream>
+using namespace std;
+
+int n, x, a[200001];
+int prima[400003];               // prima[s + n] = primul indice j cu p[j] = s, sau -1
+
+int main()
+{
+    cin >> n >> x;
+    for (int i = 1; i <= n; i++) cin >> a[i];
+
+    for (int s = 0; s <= 2 * n; s++) prima[s] = -1;
+
+    // b[i] = +1 dacă a[i] == x, altfel -1;  p = sumele parțiale ale lui b
+    // x este majoritar în [j+1, i]  <=>  p[i] - p[j] > 0  <=>  p[j] < p[i]
+    int p = 0, best = 0;
+    prima[0 + n] = 0;
+    for (int i = 1; i <= n; i++)
+    {
+        p += (a[i] == x ? 1 : -1);
+        if (prima[p + n] == -1) prima[p + n] = i;
+
+        if (p > 0)
+            best = i;                              // toată secvența [1, i]
+        else if (p - 1 >= -n && prima[p - 1 + n] != -1)   // primul j cu p[j] = p - 1
+        {
+            if (i - prima[p - 1 + n] > best) best = i - prima[p - 1 + n];
+        }
+    }
+    cout << best;
+    return 0;
+}`,
+k_bursa:`#include <iostream>
+using namespace std;
+
+int n, p[1000001];
+
+int main()
+{
+    cin >> n;
+    for (int i = 1; i <= n; i++) cin >> p[i];
+
+    // profitul pentru cumpărare în ziua i și vânzare în ziua j este
+    // d[i+1] + d[i+2] + ... + d[j], unde d[k] = p[k] - p[k-1]
+    long long suma = 0, best = 0;   // best = 0: putem să nu tranzacționăm
+    for (int k = 2; k <= n; k++)
+    {
+        if (suma < 0) suma = 0;
+        suma += p[k] - p[k - 1];
+        if (suma > best) best = suma;
+    }
+    cout << best;
+    return 0;
+}`,
+k_bursa2:`#include <iostream>
+using namespace std;
+
+int n, p[1000001];
+
+int main()
+{
+    cin >> n;
+    for (int i = 1; i <= n; i++) cin >> p[i];
+
+    int minim = p[1];               // cel mai mic preț de până acum
+    int best = 0;
+    for (int j = 2; j <= n; j++)
+    {
+        if (p[j] - minim > best) best = p[j] - minim;   // vindem azi
+        if (p[j] < minim) minim = p[j];
+    }
+    cout << best;
+    return 0;
+}`,
+k_flipgame:`#include <iostream>
+using namespace std;
+
+int n, a[100001];
+
+int main()
+{
+    cin >> n;
+    int unu = 0;
+    for (int i = 1; i <= n; i++)
+    {
+        cin >> a[i];
+        if (a[i] == 1) unu++;
+    }
+
+    // dacă inversăm o secvență, fiecare 0 din ea ne aduce +1, fiecare 1 ne costă -1
+    int suma = 0, best = -1000000;
+    for (int i = 1; i <= n; i++)
+    {
+        if (suma < 0) suma = 0;
+        suma += (a[i] == 0 ? 1 : -1);
+        if (suma > best) best = suma;
+    }
+    cout << unu + best;
+    return 0;
+}`,
+k_elim:`#include <iostream>
+using namespace std;
+
+int n, a[100002];
+long long L[100002], R[100002];   // L[i]: suma maximă care se termină în i; R[i]: care începe în i
+
+int main()
+{
+    cin >> n;
+    for (int i = 1; i <= n; i++) cin >> a[i];
+
+    L[1] = a[1];
+    for (int i = 2; i <= n; i++) L[i] = max((long long)a[i], L[i - 1] + a[i]);
+    R[n] = a[n];
+    for (int i = n - 1; i >= 1; i--) R[i] = max((long long)a[i], R[i + 1] + a[i]);
+
+    long long best = L[1];
+    for (int i = 1; i <= n; i++)          // fără eliminare
+        best = max(best, L[i]);
+    for (int i = 2; i <= n - 1; i++)      // eliminăm a[i]: lipim [.., i-1] cu [i+1, ..]
+        best = max(best, L[i - 1] + R[i + 1]);
+    cout << best;
+    return 0;
+}`,
+k_rep:`#include <iostream>
+using namespace std;
+
+int n, k, a[200001];
+
+long long kadane(int m)                   // Kadane pe primele m elemente ale vectorului repetat
+{
+    long long suma = 0, best = a[1];
+    for (int i = 1; i <= m; i++)
+    {
+        if (suma < 0) suma = 0;
+        suma += a[(i - 1) % n + 1];
+        if (suma > best) best = suma;
+    }
+    return best;
+}
+
+int main()
+{
+    cin >> n >> k;
+    long long total = 0;
+    for (int i = 1; i <= n; i++)
+    {
+        cin >> a[i];
+        total += a[i];
+    }
+
+    if (k == 1)
+        cout << kadane(n);
+    else if (total > 0)
+        cout << kadane(2 * n) + (long long)(k - 2) * total;
+    else
+        cout << kadane(2 * n);
+    return 0;
+}`,
+k_prod:`#include <iostream>
+using namespace std;
+
+int n, a[20];
+
+int main()
+{
+    cin >> n;
+    for (int i = 1; i <= n; i++) cin >> a[i];
+
+    // pentru fiecare i: cel mai mare și cel mai mic produs care se termină în i
+    long long mx = a[1], mn = a[1], best = a[1];
+    for (int i = 2; i <= n; i++)
+    {
+        long long x = a[i];
+        long long p1 = mx * x, p2 = mn * x;
+        mx = max(x, max(p1, p2));       // un minim negativ înmulțit cu x < 0 devine maxim
+        mn = min(x, min(p1, p2));
+        best = max(best, mx);
+    }
+    cout << best;
+    return 0;
+}`,
+k_brut:`#include <iostream>
+using namespace std;
+
+int n, a[5001];
+
+int main()
+{
+    cin >> n;
+    for (int i = 1; i <= n; i++) cin >> a[i];
+
+    long long best = a[1];
+    for (int i = 1; i <= n; i++)          // începutul secvenței
+    {
+        long long s = 0;
+        for (int j = i; j <= n; j++)      // sfârșitul secvenței
+        {
+            s += a[j];                    // s = a[i] + ... + a[j]
+            if (s > best) best = s;
+        }
+    }
+    cout << best;
+    return 0;
+}`,
+k_kadane:`#include <iostream>
+using namespace std;
+
+int n, a[1000001];
+
+int main()
+{
+    cin >> n;
+    for (int i = 1; i <= n; i++) cin >> a[i];
+
+    long long suma = 0;          // suma secvenței curente, care se termină în i
+    long long best = a[1];       // cea mai mare sumă găsită până acum
+    int st = 1;                  // începutul secvenței curente
+    int bst = 1, bdr = 1;        // capetele secvenței de sumă maximă
+
+    for (int i = 1; i <= n; i++)
+    {
+        if (suma < 0)            // o sumă negativă doar ne încurcă:
+        {                        // începem o secvență nouă din i
+            suma = 0;
+            st = i;
+        }
+        suma += a[i];
+        if (suma > best)
+        {
+            best = suma;
+            bst = st;
+            bdr = i;
+        }
+    }
+    cout << best << '\\n' << bst << ' ' << bdr;
+    return 0;
+}`,
+k_min:`#include <iostream>
+using namespace std;
+
+int n, a[1000001];
+
+int main()
+{
+    cin >> n;
+    for (int i = 1; i <= n; i++) cin >> a[i];
+
+    long long suma = 0, best = a[1];
+    for (int i = 1; i <= n; i++)
+    {
+        if (suma > 0) suma = 0;   // o sumă pozitivă ar mări minimul
+        suma += a[i];
+        if (suma < best) best = suma;
+    }
+    cout << best;
+    return 0;
+}`,
+k_circ:`#include <iostream>
+using namespace std;
+
+int n, a[1000001];
+
+int main()
+{
+    cin >> n;
+    for (int i = 1; i <= n; i++) cin >> a[i];
+
+    long long total = 0;
+    long long sMax = 0, bestMax = a[1];   // Kadane pentru maxim
+    long long sMin = 0, bestMin = a[1];   // Kadane pentru minim
+
+    for (int i = 1; i <= n; i++)
+    {
+        total += a[i];
+
+        if (sMax < 0) sMax = 0;
+        sMax += a[i];
+        if (sMax > bestMax) bestMax = sMax;
+
+        if (sMin > 0) sMin = 0;
+        sMin += a[i];
+        if (sMin < bestMin) bestMin = sMin;
+    }
+
+    if (bestMax < 0)                 // toate numerele sunt negative
+        cout << bestMax;
+    else
+        cout << max(bestMax, total - bestMin);
+    return 0;
+}`,
+k_flip:`#include <iostream>
+using namespace std;
+
+int n, a[1000001];
+
+int main()
+{
+    cin >> n;
+    for (int i = 1; i <= n; i++) cin >> a[i];
+
+    long long total = 0, suma = 0, minim = a[1];
+    for (int i = 1; i <= n; i++)
+    {
+        total += a[i];
+        if (suma > 0) suma = 0;      // Kadane pentru suma minimă
+        suma += a[i];
+        if (suma < minim) minim = suma;
+    }
+
+    // dacă inversăm o secvență cu suma s, noua sumă este total - 2 * s
+    if (minim < 0)
+        cout << total - 2 * minim;
+    else
+        cout << total;               // nu merită să inversăm nimic
+    return 0;
+}`,
+k_lenk:`#include <iostream>
+using namespace std;
+
+int n, k, a[1000001];
+long long p[1000001];               // p[i] = a[1] + ... + a[i], p[0] = 0
+
+int main()
+{
+    cin >> n >> k;
+    for (int i = 1; i <= n; i++)
+    {
+        cin >> a[i];
+        p[i] = p[i - 1] + a[i];
+    }
+
+    // secvența [j, i] are suma p[i] - p[j - 1] și lungimea i - j + 1 >= k,
+    // adică j - 1 <= i - k. Pentru fiecare i vrem p[j - 1] cât mai mic.
+    long long minPref = p[0];
+    long long best = p[k];          // prima secvență: [1, k]
+    for (int i = k; i <= n; i++)
+    {
+        if (p[i - k] < minPref) minPref = p[i - k];
+        if (p[i] - minPref > best) best = p[i] - minPref;
+    }
+    cout << best;
+    return 0;
+}`,
+k_2d:`#include <iostream>
+using namespace std;
+
+int n, m, a[201][201];
+long long v[201];
+
+int main()
+{
+    cin >> n >> m;
+    for (int i = 1; i <= n; i++)
+        for (int j = 1; j <= m; j++)
+            cin >> a[i][j];
+
+    long long best = a[1][1];
+    for (int i = 1; i <= n; i++)            // linia de sus
+    {
+        for (int k = 1; k <= m; k++) v[k] = 0;
+        for (int j = i; j <= n; j++)        // linia de jos
+        {
+            for (int k = 1; k <= m; k++)
+                v[k] += a[j][k];            // v[k] = suma coloanei k între liniile i și j
+
+            long long suma = 0;             // Kadane pe v
+            for (int k = 1; k <= m; k++)
+            {
+                if (suma < 0) suma = 0;
+                suma += v[k];
+                if (suma > best) best = suma;
+            }
+        }
+    }
+    cout << best;
+    return 0;
+}`,
+m_brut:`#include <iostream>
+using namespace std;
+
+int n, a[5001];
+
+int main()
+{
+    cin >> n;
+    for (int i = 1; i <= n; i++) cin >> a[i];
+
+    for (int i = 1; i <= n; i++)
+    {
+        int cnt = 0;                    // de câte ori apare a[i]
+        for (int j = 1; j <= n; j++)
+            if (a[j] == a[i]) cnt++;
+        if (cnt > n / 2)
+        {
+            cout << a[i];
+            return 0;
+        }
+    }
+    cout << -1;
+    return 0;
+}`,
+m_frecv:`#include <iostream>
+using namespace std;
+
+int n, a[1000001], fr[1000001];      // valorile sunt între 0 și 1 000 000
+
+int main()
+{
+    cin >> n;
+    for (int i = 1; i <= n; i++)
+    {
+        cin >> a[i];
+        fr[a[i]]++;
+    }
+    for (int i = 1; i <= n; i++)
+        if (fr[a[i]] > n / 2)
+        {
+            cout << a[i];
+            return 0;
+        }
+    cout << -1;
+    return 0;
+}`,
+m_sort:`#include <iostream>
+#include <algorithm>
+using namespace std;
+
+int n, a[1000001];
+
+int main()
+{
+    cin >> n;
+    for (int i = 1; i <= n; i++) cin >> a[i];
+    sort(a + 1, a + n + 1);
+
+    // dacă există un element majoritar, el ocupă sigur poziția din mijloc
+    int cand = a[(n + 1) / 2], cnt = 0;
+    for (int i = 1; i <= n; i++)
+        if (a[i] == cand) cnt++;
+
+    if (cnt > n / 2) cout << cand;
+    else cout << -1;
+    return 0;
+}`,
+m_bm:`#include <iostream>
+using namespace std;
+
+int n, a[1000001];
+
+int main()
+{
+    cin >> n;
+    for (int i = 1; i <= n; i++) cin >> a[i];
+
+    // Pasul 1: găsim candidatul
+    int cand = 0, contor = 0;
+    for (int i = 1; i <= n; i++)
+    {
+        if (contor == 0)
+        {
+            cand = a[i];
+            contor = 1;
+        }
+        else if (a[i] == cand)
+            contor++;
+        else
+            contor--;
+    }
+
+    // Pasul 2: verificăm candidatul
+    int cnt = 0;
+    for (int i = 1; i <= n; i++)
+        if (a[i] == cand) cnt++;
+
+    if (cnt > n / 2) cout << cand;
+    else cout << -1;
+    return 0;
+}`,
+m_n3:`#include <iostream>
+using namespace std;
+
+int n, a[1000001];
+
+int main()
+{
+    cin >> n;
+    for (int i = 1; i <= n; i++) cin >> a[i];
+
+    // Pasul 1: doi candidați, fiecare cu contorul lui
+    int c1 = 0, k1 = 0, c2 = 0, k2 = 0;
+    for (int i = 1; i <= n; i++)
+    {
+        int x = a[i];
+        if (k1 > 0 && x == c1) k1++;
+        else if (k2 > 0 && x == c2) k2++;
+        else if (k1 == 0) { c1 = x; k1 = 1; }
+        else if (k2 == 0) { c2 = x; k2 = 1; }
+        else { k1--; k2--; }          // x anulează câte un vot din fiecare
+    }
+
+    // Pasul 2: verificăm candidații
+    int f1 = 0, f2 = 0;
+    for (int i = 1; i <= n; i++)
+    {
+        if (k1 > 0 && a[i] == c1) f1++;
+        else if (k2 > 0 && a[i] == c2) f2++;
+    }
+
+    bool gasit = false;
+    if (f1 > n / 3) { cout << c1 << ' '; gasit = true; }
+    if (f2 > n / 3) { cout << c2 << ' '; gasit = true; }
+    if (!gasit) cout << -1;
+    return 0;
+}`,
+};
+
+document.querySelectorAll('[data-code]').forEach(box => {
+  const src = CODE[box.dataset.code] || '';
+  const pre = document.createElement('pre'), code = document.createElement('code');
+  code.className = 'language-cpp'; code.textContent = src; pre.appendChild(code);
+  const tag = document.createElement('span'); tag.className = 'tag'; tag.textContent = 'C++';
+  const btn = document.createElement('button'); btn.className = 'copy'; btn.type = 'button'; btn.textContent = 'Copiază';
+  btn.addEventListener('click', () => {
+    const reset = t => { btn.textContent = t; setTimeout(() => btn.textContent = 'Copiază', 1400); };
+    const fallback = () => { const r = document.createRange(); r.selectNodeContents(code); const s = getSelection(); s.removeAllRanges(); s.addRange(r); reset('Selectat'); };
+    try { navigator.clipboard.writeText(src).then(() => reset('Copiat'), fallback); } catch (e) { fallback(); }
+  });
+  box.append(tag, btn, pre);
+  try { if (window.hljs) hljs.highlightElement(code); } catch (e) {}
+});
+
+/* teaching toggles */
+const tglSol = document.getElementById('tglSol'), tglProj = document.getElementById('tglProj');
+tglSol.addEventListener('click', () => {
+  const on = tglSol.getAttribute('aria-pressed') !== 'true';
+  tglSol.setAttribute('aria-pressed', on); tglSol.textContent = on ? 'Ascunde toate soluțiile' : 'Arată toate soluțiile';
+  document.querySelectorAll('details.sol, details.hint').forEach(d => d.open = on);
+});
+function setProj(on){ document.documentElement.classList.toggle('proj', on); tglProj.setAttribute('aria-pressed', on); store.set('tp-proj', on ? '1' : '0'); }
+tglProj.addEventListener('click', () => setProj(tglProj.getAttribute('aria-pressed') !== 'true'));
+if (store.get('tp-proj') === '1') setProj(true);
+
+/* think timers */
+document.querySelectorAll('[data-timer]').forEach(t => {
+  let id = null;
+  const fmt = s => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+  const draw = () => {
+    t.classList.remove('over');
+    t.innerHTML = 'Timp de gândire:';
+    [3, 5, 10].forEach(m => { const b = document.createElement('button'); b.type = 'button'; b.textContent = m + ' min'; b.onclick = () => start(m * 60); t.appendChild(b); });
+  };
+  const start = secs => {
+    clearInterval(id); t.innerHTML = '';
+    const clock = document.createElement('span'); clock.className = 'clock'; clock.textContent = fmt(secs);
+    const stop = document.createElement('button'); stop.type = 'button'; stop.textContent = 'Oprește';
+    stop.onclick = () => { clearInterval(id); draw(); };
+    t.append(clock, stop);
+    id = setInterval(() => {
+      secs--; clock.textContent = fmt(Math.max(secs, 0));
+      if (secs <= 0) { clearInterval(id); t.classList.add('over'); clock.textContent = 'Timpul a expirat'; stop.textContent = 'Din nou'; }
+    }, 1000);
+  };
+  draw();
+});
+
+/* stepper */
+function Stepper(root, build) {
+  const cellsEl = root.querySelector('[data-cells]'), statusEl = root.querySelector('[data-status]');
+  const statsEl = root.querySelector('[data-stats]'), ctEl = root.querySelector('[data-ct]');
+  const prev = root.querySelector('[data-prev]'), next = root.querySelector('[data-next]'), play = root.querySelector('[data-play]');
+  let frames = [], arr = [], i = 0, timer = null;
+  function render() {
+    const f = frames[i];
+    cellsEl.innerHTML = '';
+    arr.forEach((v, k) => {
+      const c = document.createElement('div'); c.className = 'cell';
+      const isL = k === f.l, isR = k === f.r;
+      if (f.win && k >= f.win[0] && k <= f.win[1]) c.classList.add('win');
+      if (f.good && f.good.includes(k)) c.classList.add('win');
+      if (f.done && f.done(k)) c.classList.add('done');
+      if (f.bad && f.bad.includes(k)) c.classList.add('bad');
+      if (isL && isR) c.classList.add('lr'); else if (isL) c.classList.add('l'); else if (isR) c.classList.add('r');
+      if (v === null) c.classList.add('ghost');
+      if (isL) c.insertAdjacentHTML('beforeend', `<span class="ptr pl">${f.ln || 'st'}</span>`);
+      if (isR) c.insertAdjacentHTML('beforeend', `<span class="ptr pr">${f.rn || 'dr'}</span>`);
+      if (v !== null) c.append(String(v));
+      const ix = document.createElement('span'); ix.className = 'ix'; ix.textContent = v === null ? 'end()' : (f.base1 ? k + 1 : k); c.appendChild(ix);
+      cellsEl.appendChild(c);
+    });
+    statusEl.innerHTML = f.msg;
+    if (statsEl) statsEl.innerHTML = f.stats || '';
+    ctEl.textContent = `pas ${i + 1} / ${frames.length}`;
+    prev.disabled = i === 0; next.disabled = i === frames.length - 1;
+    if (i === frames.length - 1) stop();
+  }
+  function stop() { clearInterval(timer); timer = null; play.textContent = 'Rulează'; }
+  function reset() { stop(); const r = build(); arr = r.arr; frames = r.frames; i = 0; render(); }
+  prev.addEventListener('click', () => { stop(); if (i > 0) { i--; render(); } });
+  next.addEventListener('click', () => { stop(); if (i < frames.length - 1) { i++; render(); } });
+  play.addEventListener('click', () => {
+    if (timer) return stop();
+    if (i === frames.length - 1) { i = 0; render(); }
+    play.textContent = 'Pauză';
+    timer = setInterval(() => { if (i < frames.length - 1) { i++; render(); } else stop(); }, 1100);
+  });
+  reset();
+  return { reset };
+}
+
+/* Kadane demo */
+Stepper(document.getElementById('demoK'), () => {
+  const a = [-2, 1, -3, 4, -1, 2, 1, -5, 4], n = a.length, frames = [];
+  let suma = 0, best = a[0], st = 0, bst = 0, bdr = 0;
+  const stats = () => `<div><span>suma =</span> <b>${suma}</b></div><div><span>best =</span> <b>${best}</b></div><div><span>secvența maximă:</span> <b>${bst + 1}…${bdr + 1}</b></div>`;
+  frames.push({ base1: true, l: -1, r: -1, msg: 'Pornim cu suma = 0 și best = a[1] = −2.', stats: stats() });
+  for (let i = 0; i < n; i++) {
+    let msg = '';
+    if (suma < 0) { msg = `Suma curentă (${suma}) este negativă, deci o abandonăm și începem o secvență nouă din poziția ${i + 1}. `; suma = 0; st = i; }
+    suma += a[i];
+    msg += `Adăugăm a[${i + 1}] = ${a[i]}: suma = <b>${suma}</b>.`;
+    if (suma > best) { best = suma; bst = st; bdr = i; msg += ` <span class="ok">Este mai mare decât best, deci best = ${best}.</span>`; }
+    frames.push({ base1: true, ln: 'st', rn: 'i', l: st, r: i, win: [bst, bdr], msg, stats: stats() });
+  }
+  frames.push({ base1: true, l: -1, r: -1, win: [bst, bdr], msg: `Am terminat. <span class="ok">Suma maximă este ${best}, pe pozițiile ${bst + 1}…${bdr + 1}.</span>`, stats: stats() });
+  return { arr: a, frames };
+});
+
+/* Boyer-Moore demo */
+(() => {
+  const mIn = document.getElementById('mIn');
+  const demo = Stepper(document.getElementById('demoM'), () => {
+    let a = (mIn.value.match(/-?\d+/g) || ['1']).slice(0, 14).map(Number);
+    const n = a.length, frames = [];
+    let cand = '–', cnt = 0;
+    const stats = () => `<div><span>candidat =</span> <b>${cand}</b></div><div><span>contor =</span> <b>${cnt}</b></div>`;
+    frames.push({ base1: true, l: -1, r: -1, msg: 'Pornim cu contorul 0 și fără candidat.', stats: stats() });
+    for (let i = 0; i < n; i++) {
+      let msg;
+      if (cnt === 0) { cand = a[i]; cnt = 1; msg = `Contorul era 0, deci <b>${a[i]}</b> devine candidat, cu contorul 1.`; }
+      else if (a[i] === cand) { cnt++; msg = `a[${i + 1}] = ${a[i]} este egal cu candidatul: contorul crește la ${cnt}.`; }
+      else { cnt--; msg = `a[${i + 1}] = ${a[i]} este diferit de candidat: anulează o apariție, contorul scade la ${cnt}.`; }
+      frames.push({ base1: true, ln: 'i', l: i, r: -1, done: k => k < i, msg, stats: stats() });
+    }
+    const good = []; a.forEach((x, k) => { if (x === cand) good.push(k); });
+    const ok = good.length > Math.floor(n / 2);
+    frames.push({ base1: true, l: -1, r: -1, good, msg: `Verificăm candidatul ${cand}: apare ${good.length === 1 ? 'o dată' : 'de ' + good.length + ' ori'}, iar n/2 = ${Math.floor(n / 2)}. ` + (ok ? `<span class="ok">Elementul majoritar este ${cand}.</span>` : `<span class="bad">${good.length} nu este mai mare decât ${Math.floor(n / 2)}, deci nu există element majoritar.</span>`), stats: stats() });
+    return { arr: a, frames };
+  });
+  mIn.addEventListener('input', () => demo.reset());
+})();
+
+/* router */
+(() => {
+  const vk = document.getElementById('view-k'), vm = document.getElementById('view-m');
+  const tabs = document.querySelectorAll('.tabs a');
+  function route() {
+    const h = decodeURIComponent(location.hash.slice(1));
+    const isM = h === 'majoritar' || h.startsWith('m-');
+    vk.hidden = isM; vm.hidden = !isM;
+    tabs.forEach(a => a.setAttribute('aria-current', (a.dataset.view === 'm') === isM ? 'page' : 'false'));
+    document.title = isM ? 'Elementul majoritar' : 'Algoritmul lui Kadane';
+    const target = h && h !== 'majoritar' && h !== 'kadane' ? document.getElementById(h) : null;
+    if (target) target.scrollIntoView(); else window.scrollTo(0, 0);
+  }
+  window.addEventListener('hashchange', route);
+  route();
+})();
+
+/* toc highlight */
+(() => {
+  if (!('IntersectionObserver' in window)) return;
+  const links = [...document.querySelectorAll('.toc a')];
+  const map = new Map(links.map(a => [a.getAttribute('href').slice(1), a]));
+  const io = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) { links.forEach(a => a.classList.remove('on')); map.get(e.target.id)?.classList.add('on'); }
+  }), { rootMargin: '-15% 0px -75% 0px' });
+  [...map.keys()].forEach(id => { const t = document.getElementById(id); if (t) io.observe(t); });
+})();
+</script>
+
+</body></html>
